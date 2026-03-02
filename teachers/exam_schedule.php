@@ -7,12 +7,12 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'teacher'){
 
 include('../includes/config.php');
 
-// Fetch exams
+// Fetch exams with start time, end time, and room
 $exams = $conn->query("
-    SELECT es.exam_date, es.exam_time, s.subject_name
+    SELECT es.exam_date, es.exam_time, es.end_time, es.room, s.subject_name
     FROM exam_schedule es
     JOIN subjects s ON es.subject_id = s.id
-    ORDER BY es.exam_date ASC
+    ORDER BY es.exam_date ASC, es.exam_time ASC
 ");
 ?>
 
@@ -27,7 +27,7 @@ $exams = $conn->query("
 <!-- Blue Header -->
 <div class="exam-header-bar">
     <h1>Exam Schedule</h1>
-    <a href="dashboard.php" class="home-icon">🏠</a>
+    <a href="dashboard.php">🏠</a>
 </div><br><br>
 
 <div class="main-content">
@@ -47,7 +47,13 @@ $exams = $conn->query("
                 <tr>
                     <td><?php echo htmlspecialchars($row['subject_name']); ?></td>
                     <td><?php echo htmlspecialchars($row['exam_date']); ?></td>
-                    <td><?php echo htmlspecialchars($row['exam_time']); ?></td>
+                    <td>
+                    <?php 
+                        echo date("g:i A", strtotime($row['exam_time'])) . 
+                             " - " . 
+                             date("g:i A", strtotime($row['end_time']));
+                    ?>
+                </td>
                 </tr>
             <?php endwhile; ?>
         <?php else: ?>

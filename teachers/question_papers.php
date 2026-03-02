@@ -116,7 +116,7 @@ header img{
 <body>
 
 <div class="paper">
-<a href="dashboard.php" class="home-icon">🏠</a>
+<a href="dashboard.php">🏠</a>
 <header>
 
     <button class="print-btn" onclick="window.print()">🖨 Print</button>

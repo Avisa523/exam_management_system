@@ -8,9 +8,12 @@
     font-family: Arial, sans-serif;
 }
 
+/* Single body rule (merged from two duplicate body blocks) */
 body {
+    font-family: Arial, sans-serif;
     background-color: #f4f6f8;
     color: #333;
+    margin: 0;
     padding: 30px;
 }
 
@@ -140,6 +143,7 @@ tr:hover {
     margin-right: 5px;
     cursor: pointer;
     font-weight: 600;
+    border: none;
 }
 
 .edit-btn {
@@ -171,20 +175,23 @@ tr:hover {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
 }
+
 /* ===== MESSAGING ===== */
-.success-message {
+.success-message,
+.success-msg {
     background: #d4edda;
     color: #155724;
-    padding: 10px;
+    padding: 12px;
     border-radius: 4px;
     margin-bottom: 15px;
     border: 1px solid #c3e6cb;
 }
 
-.error-message {
+.error-message,
+.error-msg {
     background: #f8d7da;
     color: #721c24;
-    padding: 10px;
+    padding: 12px;
     border-radius: 4px;
     margin-bottom: 15px;
     border: 1px solid #f5c6cb;
@@ -235,33 +242,45 @@ tr:hover {
     }
 }
 
-/* ===== HEADER STYLES FROM style.css ===== */
-header {
-    position: relative;
+/* ===================================================================
+   QUESTION PAPER HEADER  (.paper header)
+   — kept as a centred block, NOT the blue flexbox nav style
+=================================================================== */
+.paper header {
     text-align: center;
-    border-bottom: 2px solid black;
+    border-bottom: 2px solid #000;
     padding-bottom: 10px;
     margin-bottom: 25px;
+    position: relative;
+    /* Reset any inherited flex / background so it stays white */
+    display: block;
+    background: transparent;
+    color: inherit;
 }
 
-.home-btn {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 26px;
-    text-decoration: none;
+.paper header img {
+    width: 100px;
+    height: 100px;
 }
 
-.home-icon {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    font-size: 24px;
-    text-decoration: none;
+.paper header h2,
+.paper header h3 {
+    margin: 5px 0;
+    font-weight: bold;
 }
 
-/* Header styling */
-header {
+.paper header p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+/* ===================================================================
+   PAGE-LEVEL HEADER NAV  (.page-header)
+   — the blue navigation bar used on other admin pages.
+   Previously this was a bare `header {}` rule that broke .paper header.
+=================================================================== */
+.page-header {
     background: #0d6efd;
     color: white;
     padding: 15px 30px;
@@ -276,7 +295,7 @@ header {
     font-weight: bold;
 }
 
-.header-right a.home-icon {
+.page-header .home-icon {
     color: white;
     font-size: 16px;
     text-decoration: none;
@@ -286,16 +305,55 @@ header {
     transition: 0.3s;
 }
 
-.header-right a.home-icon:hover {
+.page-header .home-icon:hover {
     background: #45a049;
 }
 
+/* ===================================================================
+   SHARED HOME / BACK ICON  (.home-icon, .home-btn)
+   Inside .paper header it sits top-right; elsewhere it is a link btn.
+=================================================================== */
+.home-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 26px;
+    text-decoration: none;
+}
+
+/* Default .home-icon (inside .paper header or standalone) */
+.home-icon {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 24px;
+    text-decoration: none;
+}
+
+/* Override for notice / exam header bars — inline button, not absolute */
+.notice-header-bar .home-icon,
+.exam-header-bar .home-icon {
+    position: static;
+    font-size: inherit;
+    background-color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.notice-header-bar .home-icon { color: #ff9800; }
+.exam-header-bar .home-icon   { color: #0d6efd; }
+
+.notice-header-bar .home-icon:hover,
+.exam-header-bar .home-icon:hover {
+    background-color: #f1f1f1;
+}
 
 /* ===========================
    NOTICE SYSTEM STYLES
 =========================== */
 
-/* Main content container */
 .main-content {
     max-width: 900px;
     margin: 30px auto;
@@ -303,7 +361,6 @@ header {
     font-family: Arial, sans-serif;
 }
 
-/* ===== HEADER BAR ===== */
 .notice-header-bar {
     background-color: #ff9800;
     color: white;
@@ -321,21 +378,7 @@ header {
     font-size: 1.5rem;
 }
 
-.notice-header-bar .home-icon {
-    text-decoration: none;
-    background-color: white;
-    color: #ff9800;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: background-color 0.3s;
-}
-
-.notice-header-bar .home-icon:hover {
-    background-color: #f1f1f1;
-}
-
-/* ===== FORM STYLES ===== */
+/* ===== FORM CONTAINER (notice / structured forms) ===== */
 .form-container {
     background: #fff;
     padding: 25px;
@@ -387,9 +430,11 @@ header {
     min-height: 100px;
 }
 
-/* Form buttons */
 .form-submit-wrap {
     margin-top: 18px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .form-submit-wrap button {
@@ -408,7 +453,8 @@ header {
     background: #0041a8;
 }
 
-.form-submit-wrap a {
+.form-submit-wrap a,
+.cancel-btn {
     background: #6c757d;
     color: white;
     padding: 11px 18px;
@@ -416,30 +462,12 @@ header {
     text-decoration: none;
     font-size: 15px;
     font-weight: 600;
-    margin-left: 10px;
+    display: inline-block;
 }
 
-.form-submit-wrap a:hover {
+.form-submit-wrap a:hover,
+.cancel-btn:hover {
     background: #565e64;
-}
-
-/* ===== MESSAGES ===== */
-.success-msg {
-    background: #d4edda;
-    color: #155724;
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    border: 1px solid #c3e6cb;
-}
-
-.error-msg {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    border: 1px solid #f5c6cb;
 }
 
 /* ===== NOTICES LIST ===== */
@@ -479,7 +507,6 @@ header {
     font-size: 12px;
 }
 
-/* Visibility badges */
 .notice-visibility {
     display: inline-block;
     margin-top: 6px;
@@ -489,12 +516,10 @@ header {
     font-weight: bold;
 }
 
-/* Badge colors */
-.notice-all .notice-visibility { background: #e7f3ff; color: #0056b3; }
+.notice-all      .notice-visibility { background: #e7f3ff; color: #0056b3; }
 .notice-students .notice-visibility { background: #e8f5e9; color: #1b5e20; }
 .notice-teachers .notice-visibility { background: #fff3e0; color: #e65100; }
 
-/* Actions */
 .notice-actions {
     margin-top: 12px;
 }
@@ -510,13 +535,10 @@ header {
     transition: background 0.3s;
 }
 
-.notice-actions .edit-link { background: #17a2b8; }
+.notice-actions .edit-link  { background: #17a2b8; }
 .notice-actions .edit-link:hover { background: #138496; }
+/* Note: .notice-actions .delete-btn inherits the global .delete-btn color */
 
-.notice-actions .delete-btn { background: #dc3545; }
-.notice-actions .delete-btn:hover { background: #c82333; }
-
-/* Responsive */
 @media (max-width: 600px) {
     .notice-header-bar {
         flex-direction: column;
@@ -525,9 +547,9 @@ header {
     }
 }
 
-/* ===== Question Paper STYLES ===== */
+/* ===== QUESTION PAPER WRAPPER ===== */
 .paper {
-    background: white;
+    background: #fff;
     padding: 40px;
     max-width: 900px;
     margin: auto;
@@ -535,48 +557,21 @@ header {
     position: relative;
 }
 
-.paper header {
-    text-align: center;
-    border-bottom: 2px solid #000;
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-    position: relative;
-}
-
-.paper header img {
-    width: 100px;
-    height: 100px;
-    margin-bottom: 10px;
-}
-
-.paper header h1,
-.paper header h2 {
-    margin: 8px 0;
-    color: #000;
+.marks {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    text-align: right;
     font-weight: bold;
-}
-
-.paper header h1 {
-    font-size: 24px;
-}
-
-.paper header h2 {
-    font-size: 18px;
-}
-
-.paper header p {
-    margin: 5px 0;
     font-size: 14px;
-    color: #333;
 }
 
-.paper-content {
-    padding: 0;
+.marks strong {
+    display: block;
 }
 
 .question {
-    margin: 15px 0;
-    padding: 10px 0;
+    margin-bottom: 25px;
 }
 
 .question strong {
@@ -595,133 +590,99 @@ header {
     margin-top: 10px;
 }
 
-.admin-only {
-    display: block;
-}
-
-/* Page layout */
-.paper-container {
+/* ===== ADMIN DECISION BOX ===== */
+.admin-controls {
     max-width: 900px;
-    margin: auto;
-    background: white;
-    padding: 40px;
+    margin: 30px auto;
+    padding: 20px;
+    background: #fff3cd;
+    border: 1px solid #f39c12;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* Header */
-.paper-header {
-    text-align: center;
-    border-bottom: 2px solid #000;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
-.paper-header img {
-    height: 70px;
+.admin-controls h3 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #856404;
     margin-bottom: 10px;
 }
 
-/* Question */
-.question h4 {
-    margin: 15px 0 10px 0;
+/* Override global form styles inside admin-controls */
+.admin-controls form {
+    display: block;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 0;
 }
 
-.question p {
-    margin: 5px 0;
-}
-
-.answer {
-    border-bottom: 1px solid #000;
+.admin-controls textarea {
+    width: 100%;
     height: 60px;
-    margin-top: 15px;
-}
-
-/* Admin box */
-.admin-box {
-    background: #fff3cd;
-    padding: 12px;
+    margin-top: 5px;
+    padding: 10px;
     border-radius: 4px;
-    margin-bottom: 15px;
-    border-left: 4px solid #f39c12;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    flex: none;
 }
 
-.admin-actions {
-    background: #f0f8ff;
-    padding: 20px;
-    border-radius: 4px;
-}
-
-/* Buttons */
-button {
-    cursor: pointer;
+.admin-controls button {
+    padding: 8px 15px;
+    margin-top: 10px;
+    margin-right: 5px;
     border: none;
     border-radius: 4px;
-}
-
-.approve-btn {
-    background: #28a745;
-    color: white;
-    padding: 10px 18px;
-}
-
-.edit-btn {
-    background: #17a2b8;
-    color: white;
-    padding: 10px 18px;
-    text-decoration: none;
-}
-
-.delete-btn {
-    background: #dc3545;
-    color: white;
-    padding: 8px 16px;
-}
-
-/* Print styles */
-@page {
-    margin: 0.5in;
-    size: auto;
-}
-
-@media print {
-    * {
-        background: transparent !important;
-        box-shadow: none !important;
-    }
-
-    body {
-        margin: 0;
-        padding: 0;
-        font-size: 12pt;
-    }
-
-    .admin-only {
-        display: none !important;
-    }
-
-    html::before,
-    html::after,
-    body::before,
-    body::after {
-        display: none !important;
-    }
-}
-
-/* Marks top-right */
-.marks {
-    position: absolute;
-    top: 10px;
-    right: 0;
-    text-align: right;
     font-weight: bold;
-    font-size: 14px;
-    line-height: 1.6;
+    cursor: pointer;
+    transition: 0.3s;
+    color: white;
+    flex: none;
 }
 
-.marks strong {
-    display: block;
+.admin-controls .approve-btn {
+    background-color: #28a745;
+    color: white;
 }
 
-/* Print button */
+.admin-controls .approve-btn:hover {
+    background-color: #218838;
+}
+
+.admin-controls .disapprove-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.admin-controls .disapprove-btn:hover {
+    background-color: #c82333;
+}
+
+/* Default buttons inside admin-controls get the blue colour */
+.admin-controls form button:not(.approve-btn):not(.disapprove-btn) {
+    background-color: #1e90ff;
+}
+
+.admin-controls a {
+    padding: 8px 10px;
+    background: #28a745;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: 0.3s;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.admin-controls a:hover {
+    background: #218838;
+}
+
+/* ===== PRINT STYLES ===== */
 .print-btn {
     position: absolute;
     top: 10px;
@@ -741,6 +702,23 @@ button {
     background: #e0e0e0;
 }
 
+@media print {
+    .print-btn,
+    .admin-controls {
+        display: none !important;
+    }
+
+    * {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-size: 12pt;
+    }
+}
 
 /* ===== EXAM SCHEDULE HEADER ===== */
 .exam-header-bar {
@@ -756,21 +734,7 @@ button {
     margin: 0;
 }
 
-.exam-header-bar .home-icon {
-    text-decoration: none;
-    background-color: white;
-    color: #0d6efd;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.exam-header-bar .home-icon:hover {
-    background-color: #f1f1f1;
-}
-
-/* ===== ADDITIONAL STYLES ===== */
+/* ===== UTILITY / EXTRA ===== */
 .header {
     display: flex;
     justify-content: space-between;
@@ -804,18 +768,107 @@ button {
     background: #1c5980;
 }
 
-.status-pending {
-    color: #ffa500;
+.status-pending     { color: #ffa500; font-weight: bold; }
+.status-approved    { color: #28a745; font-weight: bold; }
+.status-disapproved { color: #dc3545; font-weight: bold; }
+
+/* =======================
+   MARKSHEET STYLES
+======================= */
+
+/* Container */
+.marksheet {
+    width: 750px;
+    margin: 20px auto;
+    padding: 25px;
+    border: 2px solid #000;
+    background: #fff;
+    position: relative; /* Needed for absolute positioning of print button */
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+/* Print button */
+.marksheet .print-btn {
+    position: absolute;   /* inside marksheet box */
+    top: 10px;            /* distance from top of box */
+    right: 10px;          /* distance from right of box */
+    padding: 5px 10px;    /* small button */
+    font-size: 12px;      /* small font */
+    background-color: #808284;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: background 0.3s, transform 0.2s;
+}
+
+.marksheet .print-btn:hover {
+    background-color: #9ea0a3;
+    transform: translateY(-1px);
+}
+
+/* Header */
+.marksheet header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.marksheet header img {
+    height: 100px;
+    margin-bottom: 10px;
+}
+.marksheet header h2, 
+.marksheet header h3 {
+    margin: 5px 0;
     font-weight: bold;
 }
 
-.status-approved {
-    color: #28a745;
+/* Student info */
+.marksheet .student-info {
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+.marksheet .student-info p {
+    margin: 4px 0;
+}
+
+/* Table */
+.marksheet table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.marksheet th {
+    background-color: brown; /* change to any color you like */
+    color: white;              /* text color */
+    font-weight: bold;
+    border: 1px solid #000;
+}
+.marksheet table,  
+.marksheet td {
+    border: 1px solid #000;
+}
+.marksheet th, 
+.marksheet td {
+    padding: 8px;
+    text-align: center;
+}
+.marksheet .total-row {
+    font-weight: bold;
+    background: #f0f0f0;
+}
+
+/* Remarks section */
+.marksheet .remarks {
+    margin-top: 20px;
     font-weight: bold;
 }
 
-.status-disapproved {
-    color: #dc3545;
-    font-weight: bold;
+/* Hide button when printing */
+@media print {
+    .marksheet .print-btn {
+        display: none !important;
+    }
 }
-

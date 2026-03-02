@@ -63,7 +63,7 @@ table th {
 <header>
     <h1>Student List</h1>
 
-<a href="dashboard.php" class="home-icon">🏠</a>
+<a href="dashboard.php">🏠</a>
 
 </header>
 <body>

@@ -50,7 +50,7 @@ $results = $conn->query("
     <header>
     
 
-<a href="dashboard.php" class="home-icon">🏠</a>
+<a href="dashboard.php">🏠</a>
 
 </header>
 

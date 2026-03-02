@@ -495,3 +495,22 @@ a {
         display: none;
     }
 }
+/*mobile responsiveness*/
+@media screen and (max-width: 600px) {
+    .paper {
+        padding: 20px;
+    }
+    .marks {
+        font-size: 12px;
+    }
+    .question p {
+        font-size: 12px;
+    }
+}
+
+/*mobile view*/
+@media screen and (max-width: 900px) {
+    .cards {
+        grid-template-columns: 1fr;
+    }
+}

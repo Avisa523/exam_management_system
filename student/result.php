@@ -1,78 +1,220 @@
 <?php
 session_start();
-include("../includes/config.php");
+include('../includes/config.php');
 
-// Check student login
-if(!isset($_SESSION['role']) || $_SESSION['role'] != 'student'){
-    header("Location: ../authentication/login.php");
-    exit();
-}
-// 2. Check if registration is completed
-$user_id = $_SESSION['id'];
-$result = $conn->query("SELECT completed_registration FROM student_profiles WHERE user_id='$user_id'");
+// Determine role
+$role = $_SESSION['role'] ?? '';
+$student_id = null;
 
-if($result && $row = $result->fetch_assoc()){
-    if($row['completed_registration'] == 0){
-        // Not registered → force registration
-        header("Location: registration.php");
+// -------------------------
+// Admin: student_id from URL
+// -------------------------
+if($role == 'admin'){
+    if(!isset($_GET['student_id'])){
+        echo "No student selected.";
         exit;
     }
-} else {
-    // No profile found → force registration
-    header("Location: registration.php");
-    exit;
+    $student_id = intval($_GET['student_id']);
 }
 
-// Map users.id to students.id
-$user_id = $_SESSION['id'];
-$student_query = $conn->query("SELECT id, full_name FROM students WHERE user_id = '$user_id'");
-$student_row = $student_query->fetch_assoc();
-$student_id = $student_row['id'] ?? 0;
-$student_name = $student_row['full_name'] ?? "Student";
+// -------------------------
+// Student: get ID from session
+// -------------------------
+elseif($role == 'student'){
+    if(!isset($_SESSION['id'])){
+        header("Location: ../authentication/login.php");
+        exit;
+    }
+    $user_id = $_SESSION['id'];
+    // Map to students.id
+    $stmt = $conn->prepare("SELECT * FROM students WHERE user_id=?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $student = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
-// Calculate results
-$query = "SELECT 
-            SUM(marks) AS total_obtained,
-            SUM(total_marks) AS total_marks,
-            COUNT(subject_id) AS total_subjects
-          FROM exam_results
-          WHERE student_id = '$student_id'";
+    if(!$student){
+        echo "Student not found.";
+        exit;
+    }
+    $student_id = $student['id'];
+}
 
-$result = mysqli_query($conn, $query);
-$data = mysqli_fetch_assoc($result);
+// -------------------------
+// Fetch student info
+// -------------------------
+if($role == 'admin'){
+    $stmt = $conn->prepare("SELECT * FROM students WHERE id=?");
+    $stmt->bind_param("i", $student_id);
+    $stmt->execute();
+    $student = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
-$total_obtained = $data['total_obtained'] ?? 0;
-$total_marks = $data['total_marks'] ?? 0;
-$total_subjects = $data['total_subjects'] ?? 0;
+    if(!$student){
+        echo "Student not found.";
+        exit;
+    }
+}
 
-$percentage = ($total_marks > 0) ? ($total_obtained / $total_marks) * 100 : 0;
-$final_result = ($percentage >= 40) ? "PASS" : "FAIL";
+// -------------------------
+// Fetch totals
+// -------------------------
+$stmt = $conn->prepare("
+    SELECT 
+        SUM(er.marks) AS total_obtained,
+        SUM(su.full_marks) AS total_full_marks,
+        ROUND(SUM(er.marks)/SUM(su.full_marks)*100,2) AS percentage
+    FROM exam_results er
+    JOIN subjects su ON er.subject_id = su.id
+    WHERE er.student_id=?
+");
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$totals = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+// -------------------------
+// Fetch marks per subject
+// -------------------------
+$stmt = $conn->prepare("
+    SELECT 
+        su.subject_name,
+        su.full_marks,
+        er.marks,
+        CASE 
+            WHEN (er.marks / su.full_marks * 100) >= 80 THEN 'A+'
+            WHEN (er.marks / su.full_marks * 100) >= 70 THEN 'A'
+            WHEN (er.marks / su.full_marks * 100) >= 60 THEN 'B+'
+            WHEN (er.marks / su.full_marks * 100) >= 50 THEN 'B'
+            WHEN (er.marks / su.full_marks * 100) >= 40 THEN 'C'
+            ELSE 'F'
+        END AS grade,
+        CASE WHEN er.approved = 1 THEN 'Approved' ELSE 'Pending' END AS status
+    FROM exam_results er
+    JOIN subjects su ON er.subject_id = su.id
+    WHERE er.student_id=?
+    ORDER BY su.subject_name ASC
+");
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$results = $stmt->get_result();
+$stmt->close();
+
+// -------------------------
+// Final result PASS/FAIL
+// -------------------------
+$perc = $totals['percentage'] ?? 0;
+$final_result = ($perc >= 40) ? "PASS" : "FAIL";
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Final Result</title>
-    <link rel="stylesheet" href="../assets/css/student.css">
+<meta charset="UTF-8">
+<title>Marksheet - <?php echo htmlspecialchars($student['full_name']); ?></title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+.marksheet {
+    width: 800px;
+    margin: 20px auto;
+    padding: 30px;
+    border: 2px solid #000;
+    background: #fff;
+    position: relative;
+    font-family: Arial, sans-serif;
+}
+.marksheet .print-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 5px 10px;
+    font-size: 12px;
+    background-color: #1e90ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.marksheet .print-btn:hover { background-color: #0d6efd; }
+.marksheet header { text-align: center; margin-bottom: 25px; }
+.marksheet header img { height: 100px; margin-bottom: 10px; }
+.marksheet header h2, .marksheet header h3 { margin: 5px 0; font-weight: bold; }
+.marksheet .student-info { margin-bottom: 20px; }
+.marksheet .student-info p { margin: 4px 0; }
+.marksheet table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.marksheet table, .marksheet th, .marksheet td { border: 1px solid #000; }
+.marksheet th { background-color: #1e90ff; color: white; }
+.marksheet td { background-color: #f9f9f9; }
+.marksheet th, .marksheet td { padding: 8px; text-align: center; }
+.marksheet .total-row { font-weight: bold; background: #f0f0f0; }
+.marksheet .final-pass { color: #28a745; font-weight: bold; }
+.marksheet .final-fail { color: #dc3545; font-weight: bold; }
+.marksheet .remarks { margin-top: 20px; font-weight: bold; }
+@media print { .marksheet .print-btn { display: none !important; } }
+</style>
 </head>
 <body>
+<div class="exam-header-bar">
+    <h1>Results</h1>
+    <a href="dashboard.php" >🏠</a>
+</div>
+<div class="marksheet">
+    <button class="print-btn" onclick="window.print()">🖨 Print</button>
 
-<div class="marksheet-box">
-    <!-- Header -->
-    <div class="marksheet-header">
-        <h1>Marksheet</h1>
-        <a href="dashboard.php" class="home-icon">🏠</a>
+    <header>
+        <img src="../assets/images/everest logo.png" alt="Logo">
+        <h2>Everest College</h2>
+        <h3>Student Marksheet</h3>
+    </header>
+
+    <div class="student-info">
+        <p><strong>Name:</strong> <?php echo htmlspecialchars($student['full_name']); ?></p>
+        <p><strong>Roll / ID:</strong> <?php echo htmlspecialchars($student['id']); ?></p>
+        <p><strong>Date:</strong> <?php echo date("Y-m-d"); ?></p>
     </div>
 
-    <!-- Content -->
-    <div class="marksheet-content">
-        <h2><?php echo htmlspecialchars($student_name); ?></h2>
-        <p><strong>Total Subjects:</strong> <?php echo $total_subjects; ?></p>
-        <p><strong>Total Obtained:</strong> <?php echo $total_obtained; ?></p>
-        <p><strong>Total Marks:</strong> <?php echo $total_marks; ?></p>
-        <p><strong>Percentage:</strong> <?php echo number_format($percentage,2); ?>%</p>
-        <div class="final-result <?php echo strtolower($final_result); ?>">Final Result: <?php echo $final_result; ?></div>
+    <table>
+        <tr>
+            <th>Subject</th>
+            <th>Full Marks</th>
+            <th>Marks Obtained</th>
+            <th>Grade</th>
+            <th>Status</th>
+        </tr>
+        <?php
+        if($results->num_rows > 0){
+            while($row = $results->fetch_assoc()){
+                echo "<tr>
+                        <td>".htmlspecialchars($row['subject_name'])."</td>
+                        <td>".htmlspecialchars($row['full_marks'])."</td>
+                        <td>".htmlspecialchars($row['marks'])."</td>
+                        <td>".htmlspecialchars($row['grade'])."</td>
+                        <td>".htmlspecialchars($row['status'])."</td>
+                      </tr>";
+            }
+            echo "<tr class='total-row'>
+                    <td colspan='2'>Total Marks</td>
+                    <td>".htmlspecialchars($totals['total_obtained'])."</td>
+                    <td colspan='2'>Percentage: ".htmlspecialchars($totals['percentage'])."%</td>
+                  </tr>";
+            echo "<tr class='total-row'>
+                    <td colspan='5'>Final Result: <span class='".strtolower($final_result == 'PASS' ? 'final-pass' : 'final-fail')."'>".$final_result."</span></td>
+                  </tr>";
+        } else {
+            echo "<tr><td colspan='5'>No exam results found.</td></tr>";
+        }
+        ?>
+    </table>
+
+    <div class="remarks">
+        <p><strong>Teacher's Remark:</strong> 
+        <?php 
+            if($perc >= 80) echo "Excellent Performance";
+            elseif($perc >= 60) echo "Good Performance";
+            elseif($perc >= 40) echo "Satisfactory";
+            else echo "Needs Improvement";
+        ?>
+        </p>
     </div>
 </div>
 

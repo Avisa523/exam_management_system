@@ -82,7 +82,7 @@ $questions = $conn->query("SELECT * FROM question_papers ORDER BY id DESC");
 
 <header>
     <h1>Question Management</h1>
-    <a href="dashboard.php" class="home-icon">🏠</a>
+    <a href="dashboard.php">🏠</a>
 </header>
 
 <div class="card">

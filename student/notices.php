@@ -38,7 +38,7 @@ $notices = $conn->query("SELECT * FROM noticeboard ORDER BY posted_at DESC");
 <!-- Header Bar -->
 <div class="notice-header-bar">
     <h1>Noticeboard</h1>
-    <a href="dashboard.php" class="home-icon">🏠</a>
+    <a href="dashboard.php">🏠</a>
 </div>
 
 <!-- Main Content -->

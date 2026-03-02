@@ -413,3 +413,41 @@ button:hover{
     border-radius:4px;
     margin-top:10px;
 }
+
+/*mobile responsive*/
+@media (max-width: 600px) {
+    .container {
+        width: 90%;
+        padding: 20px;
+    }
+    .preview-row {
+        flex-direction: column;
+    }
+}
+
+/*mobile view*/
+@media (max-width: 600px) {
+    .container {
+        width: 90%;
+        padding: 20px;
+    }
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .topbar .title {
+        font-size: 18px;
+    }
+
+
+    .topbar .user {
+        font-size: 12px;
+    }
+    .preview-row {
+        flex-direction: column;
+    }
+    .preview-card {
+        margin-bottom: 20px;
+    }
+}

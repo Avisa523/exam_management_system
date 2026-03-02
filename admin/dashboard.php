@@ -42,8 +42,7 @@ $total_exams = $exams->fetch_assoc()['total'];
             <ul>
                 <li><a href="dashboard.php">🏠 Dashboard</a></li>
                 <li><a href="question_paper.php">📄 Questions</a></li>
-                <li><a href="exam_result.php">📊 Results</a></li>
-                <li><a href="student_list.php">🖨️ Marksheet</a></li>
+                <li><a href="exam_result.php">📊 Results/ 🖨️ Marksheet</a></li>
                 <li><a href="notice.php">📢 Noticeboard</a></li>
                 <li><a href="../authentication/logout.php">
                     <i class="fas fa-sign-out-alt"></i> 🔒 Logout</a></li>

@@ -66,9 +66,9 @@ $notices = $conn->query("SELECT * FROM noticeboard ");
                     <a href="question_manage.php">Open</a>
                 </div>
                 <div class="card green">
-                    <h3>Student Marks</h3>
-                    <p>See student marks</p>
-                    <a href="exam_resultsheet.php">Open</a>
+                    <h3>Exam Schedule</h3>
+                    <p>View exam schedule</p>
+                    <a href="exam_schedule.php">Open</a>
                 </div>
                 <div class="card orange">
                     <h3>Approve Results</h3>

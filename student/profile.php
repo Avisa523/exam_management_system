@@ -77,7 +77,7 @@ function display_file($file, $folder="students"){
 <div class="topbar">
     <div class="title">Exam Management System - Profile</div>
     <div class="user">
-        <a href="dashboard.php" class="back-button">🏠</a>
+        <a href="dashboard.php">🏠</a>
         Welcome <?php echo htmlspecialchars($username); ?>
     </div>
 </div>

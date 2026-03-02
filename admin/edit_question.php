@@ -1,100 +1,109 @@
-<?php
-session_start();
-include('../includes/config.php');
-
-// Only admin can access
-if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
-    header('Location: ../authentication/login.php');
-    exit;
-}
-
-$message = '';
-$paper = null;
-
-// Get question paper ID from URL
-$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-if(!$id){
-    die('Question paper ID not provided.');
-}
-
-// Fetch the question paper
-$stmt = $conn->prepare('SELECT qp.*, t.full_name AS teacher_name, s.subject_name FROM question_papers qp LEFT JOIN teachers t ON t.id=qp.teacher_id LEFT JOIN subjects s ON s.id=qp.subject_id WHERE qp.id=? LIMIT 1');
-$stmt->bind_param('i', $id);
-$stmt->execute();
-$paper = $stmt->get_result()->fetch_assoc();
-$stmt->close();
-
-if(!$paper){
-    die('Question paper not found.');
-}
-
-// Handle Update
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
-    $title = trim($_POST['title'] ?? '');
-    $question = trim($_POST['question'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    
-    if(empty($title) || empty($question)){
-        $message = 'Title and question are required!';
-    } else {
-        $stmt = $conn->prepare('UPDATE question_papers SET title=?, question=?, description=? WHERE id=?');
-        $stmt->bind_param('sssi', $title, $question, $description, $id);
-        if($stmt->execute()){
-            $message = 'Question paper updated successfully!';
-            // Refresh the paper data
-            $stmt = $conn->prepare('SELECT qp.*, t.full_name AS teacher_name, s.subject_name FROM question_papers qp LEFT JOIN teachers t ON t.id=qp.teacher_id LEFT JOIN subjects s ON s.id=qp.subject_id WHERE qp.id=? LIMIT 1');
-            $stmt->bind_param('i', $id);
-            $stmt->execute();
-            $paper = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
-        }
-    }
-}
-
-$subjects = $conn->query('SELECT * FROM subjects ORDER BY subject_name ASC');
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Edit Question Paper</title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
-    <style>
-        .form-container { max-width:900px; margin:0 auto; background:white; padding:30px; border-radius:5px; }
-        .form-group { margin-bottom:20px; }
-        .form-group label { display:block; font-weight:bold; margin-bottom:8px; color:#333; }
-        .form-group input, .form-group textarea, .form-group select { 
-            width:100%; 
-            padding:10px; 
-            border:1px solid #ddd; 
-            border-radius:4px; 
-            font-size:14px;
-            font-family:inherit;
-        }
-        .form-group textarea { resize:vertical; min-height:150px; }
-        .form-actions { display:flex; gap:10px; margin-top:30px; }
-        .form-actions button, .form-actions a { 
-            padding:10px 20px; 
-            border:none; 
-            border-radius:4px; 
-            cursor:pointer; 
-            font-size:14px;
-            text-decoration:none;
-            text-align:center;
-        }
-        .btn-save { background:#28a745; color:white; }
-        .btn-save:hover { background:#218838; }
-        .btn-cancel { background:#6c757d; color:white; }
-        .btn-cancel:hover { background:#5a6268; }
-        .success-msg { background:#d4edda; color:#155724; padding:12px; border-radius:4px; margin-bottom:20px; border-left:4px solid #28a745; }
-        .error-msg { background:#f8d7da; color:#721c24; padding:12px; border-radius:4px; margin-bottom:20px; border-left:4px solid #dc3545; }
-        .paper-info { background:#f5f5f5; padding:15px; border-radius:4px; margin-bottom:20px; }
-        .paper-info p { margin:5px 0; }
-        .paper-info strong { color:#333; }
-        .header-bar { background:#0d6efd; color:white; padding:20px; text-align:center; margin-bottom:30px; }
-        .header-bar h1 { margin:0; }
-    </style>
+<meta charset="UTF-8">
+<title>Edit Question Paper</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+/* HEADER */
+.header-bar {
+    background: #0d6efd;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+.header-bar h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+/* FORM CONTAINER */
+.form-container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: white;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* MESSAGES */
+.success-msg, .error-msg {
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+.success-msg { background: #d4edda; color: #155724; border-left: 5px solid #28a745; }
+.error-msg { background: #f8d7da; color: #721c24; border-left: 5px solid #dc3545; }
+
+/* PAPER INFO */
+.paper-info {
+    background: #f1f1f1;
+    padding: 15px 20px;
+    border-radius: 5px;
+    margin-bottom: 25px;
+}
+.paper-info p {
+    margin: 5px 0;
+}
+.paper-info strong {
+    color: #333;
+}
+
+/* FORM GROUP */
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #333;
+}
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: inherit;
+}
+.form-group textarea { resize: vertical; min-height: 120px; }
+
+/* BUTTONS */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+.form-actions button, .form-actions a {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: 0.3s;
+}
+.btn-save { background: #28a745; color: white; }
+.btn-save:hover { background: #218838; }
+.btn-cancel { background: #6c757d; color: white; }
+.btn-cancel:hover { background: #5a6268; }
+
+/* RESPONSIVE */
+@media(max-width: 600px){
+    .form-container { padding: 20px; }
+    .form-actions { flex-direction: column; }
+}
+</style>
 </head>
 <body>
 
@@ -105,7 +114,7 @@ $subjects = $conn->query('SELECT * FROM subjects ORDER BY subject_name ASC');
 <div class="form-container">
     
     <?php if(!empty($message)): ?>
-        <div class="<?php echo strpos($message, 'Error') !== false || strpos($message, 'required') !== false ? 'error-msg' : 'success-msg'; ?>">
+        <div class="<?php echo strpos($message, 'required') !== false ? 'error-msg' : 'success-msg'; ?>">
             <?php echo htmlspecialchars($message); ?>
         </div>
     <?php endif; ?>

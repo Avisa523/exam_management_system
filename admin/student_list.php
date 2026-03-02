@@ -20,9 +20,9 @@ $result = $conn->query("SELECT * FROM students ORDER BY id ASC");
 </head>
 <body>
 
-<div class="header">
+<div class="topbar">
     <h2>Students List</h2>
-    <a href="dashboard.php" class="dashboard-btn">🏠</a>
+    <a href="dashboard.php">🏠</a>
 </div>
 
 <table>
