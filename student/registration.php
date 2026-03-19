@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Student Registration</title>
-
+<title>;Student Registration</title>
 <style>
 
 body{
