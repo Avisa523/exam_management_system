@@ -63,7 +63,7 @@ table th {
 <header>
     <h1>Student List</h1>
 
-<a href="0_dashboard.php" class="home-icon">🏠</a>
+<a href="dashboard.php" class="home-icon">🏠</a>
 
 </header>
 <body>
@@ -77,7 +77,7 @@ table th {
         <th>Contact</th>
         <th>Semester</th>
         <th>Subject</th>
-        <th>Action</th>
+    
     </tr>
     <?php
     $counter = 1;
@@ -89,9 +89,7 @@ table th {
         <td><?php echo htmlspecialchars($s['contact_no']); ?></td>
         <td><?php echo htmlspecialchars($s['semester']); ?></td>
         <td><?php echo htmlspecialchars($s['subject_name']); ?></td>
-        <td>
-            <a href="edit_marks.php?student_id=<?php echo $s['id']; ?>" class="edit-btn">Edit Marks</a>
-        </td>
+        
     </tr>
     <?php endwhile; ?>
 </table>

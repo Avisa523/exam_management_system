@@ -1,0 +1,167 @@
+/* Teacher Dashboard & Question Paper Styles */
+
+/* Question Paper Container */
+body.print-mode {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 40px;
+}
+
+.paper {
+    background: white;
+    padding: 40px;
+    max-width: 900px;
+    margin: auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Paper Header */
+.paper header {
+    text-align: center;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.home-icon {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 26px;
+    text-decoration: none;
+    color: #333;
+}
+
+.paper header img {
+    width: 100px;
+    height: 100px;
+}
+
+.marks {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    text-align: right;
+    font-weight: bold;
+}
+
+/* Print Button */
+.print-btn {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    padding: 6px 12px;
+    cursor: pointer;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.print-btn:hover {
+    background: #2980b9;
+}
+
+@media print {
+    .print-btn { display: none; }
+    .home-icon { display: none; }
+    body { padding: 0; }
+    .paper { box-shadow: none; }
+}
+
+/* Question Sections */
+.paper h2 {
+    font-size: 20px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.question {
+    margin: 15px 0;
+    padding: 10px 0;
+}
+
+.question p {
+    margin: 5px 0;
+}
+
+/* Notice Display */
+.notice-container {
+    background: white;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.notice-container h3 {
+    color: #2c3e50;
+    margin-top: 0;
+}
+
+.notice-container p {
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Score Management */
+.score-form {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.score-form input,
+.score-form select {
+    width: calc(50% - 10px);
+    padding: 10px;
+    margin: 10px 5px 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Result Sheet */
+.result-sheet {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.result-sheet th,
+.result-sheet td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.result-sheet th {
+    background: #34495e;
+    color: white;
+}
+
+.result-sheet tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.result-sheet tr:hover {
+    background: #ecf0f1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .paper {
+        padding: 20px;
+    }
+    
+    .score-form input,
+    .score-form select {
+        width: 100%;
+        margin: 10px 0;
+    }
+}
+ 

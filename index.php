@@ -241,9 +241,40 @@ a:hover { opacity:0.85; transition:0.3s; }
 <!-- ABOUT -->
 <section id="about">
     <h2>About Us</h2>
+
+    <img src="assets/images/aboutus.jpeg" alt="About Us" 
+         style="width:300px; margin-bottom:20px;">
+
     <p>
-        We provide quality education with experienced faculty, modern labs, and student support services. 
-        Our mission is to produce graduates with academic excellence and career readiness.
+        We look forward to welcoming you to <strong>Everest College</strong>. 
+        Our faculty and administrative staff are here to teach, support, and 
+        challenge you to reach your full potential. We aim to provide an 
+        environment where academic excellence meets personal growth.
+    </p>
+
+    <p>
+        At Everest, learning is both intense and rewarding. With a strong 
+        industry presence and career network, you won’t just study what you love—you’ll do what you love. 
+        Hands-on learning is integrated into the curriculum, helping you build 
+        real-world experience and professional connections before you graduate.
+    </p>
+
+    <p>
+        We believe in balancing professional success with personal well-being. 
+        Our faculty and researchers are encouraged to excel in their fields 
+        while maintaining a healthy work-life balance. At Everest, people are 
+        our most valuable resource.
+    </p>
+
+    <p>
+        Whether you're seeking practical experience, a career change, or career 
+        advancement, Everest College offers programs designed to meet modern 
+        industry demands. Students benefit from expert faculty, internships, 
+        and financial opportunities that turn academic goals into reality.
+    </p>
+
+    <p>
+        <strong>Everest success starts here.</strong>
     </p>
 </section>
 

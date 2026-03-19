@@ -2,115 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>;Student Registration</title>
-<style>
-
-body{
-font-family: Arial, sans-serif;
-background:#f5f6f8;
-}
-
-.container{
-width:70%;
-margin:30px auto;
-background:#fff;
-padding:30px;
-border-radius:6px;
-}
-
-.stepper{
-display:flex;
-justify-content:space-between;
-margin-bottom:40px;
-}
-
-.step{
-text-align:center;
-flex:1;
-position:relative;
-color:#aaa;
-}
-
-.step::after{
-content:'';
-position:absolute;
-top:15px;
-right:-50%;
-width:100%;
-height:2px;
-background:#ddd;
-}
-
-.step:last-child::after{
-display:none;
-}
-
-.circle{
-width:30px;
-height:30px;
-border-radius:50%;
-background:#ddd;
-margin:0 auto 5px;
-line-height:30px;
-color:#fff;
-}
-
-.step.active{
-color:#0d6efd;
-}
-
-.step.active .circle{
-background:#0d6efd;
-}
-
-h2{
-color:#0d6efd;
-text-align:center;
-margin-bottom:30px;
-}
-
-label{
-font-weight:bold;
-display:block;
-margin-bottom:5px;
-}
-
-input, select{
-width:100%;
-padding:10px;
-margin-bottom:20px;
-border:1px solid #ccc;
-border-radius:4px;
-}
-
-button{
-background:#0d6efd;
-color:#fff;
-padding:10px 25px;
-border:none;
-border-radius:4px;
-cursor:pointer;
-margin-right:10px;
-}
-
-.form-step{
-display:none;
-}
-
-.form-step.active{
-display:block;
-}
-
-.flex-row{
-display:flex;
-gap:30px;
-}
-
-.flex-row .input-group{
-flex:1;
-}
-
-</style>
+<title>Student Registration</title>
+<link rel="stylesheet" href="../assets/css/registration.css">
+<script src="../assets/js/registration.js"></script>
 </head>
 
 <body>
@@ -278,40 +172,6 @@ flex:1;
 </form>
 </div>
 
-<script>
-
-let currentStep = 0;
-
-const steps = document.querySelectorAll(".form-step");
-const indicators = document.querySelectorAll(".step");
-
-function showStep(index){
-
-steps.forEach((s,i)=>s.classList.toggle("active",i===index));
-
-indicators.forEach((ind,i)=>ind.classList.toggle("active",i===index));
-
-}
-
-function nextStep(){
-
-if(currentStep < steps.length-1){
-currentStep++;
-showStep(currentStep);
-}
-
-}
-
-function prevStep(){
-
-if(currentStep > 0){
-currentStep--;
-showStep(currentStep);
-}
-
-}
-
-</script>
 
 </body>
 </html>

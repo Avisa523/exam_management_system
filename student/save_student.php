@@ -1,117 +1,84 @@
 <?php
 session_start();
-include("../includes/config.php"); // Database connection
+include("../includes/config.php");
 
-// Only logged-in students can access
+// Only allow logged-in students
 if(!isset($_SESSION['role']) || $_SESSION['role'] != 'student'){
     header("Location: ../authentication/login.php");
     exit;
 }
 
-// Check form submission
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
+$user_id = $_SESSION['id'];
 
-    // Collect personal info
-    $name      = trim($_POST['name']);
-    $dob       = trim($_POST['dob']);
-    $gender    = trim($_POST['gender']);
-    $email     = trim($_POST['email']);
-    $mobile    = trim($_POST['mobile']);
-    
-    // Family info
-    $father_name    = trim($_POST['father_name']);
-    $father_phone   = trim($_POST['father_phone']);
-    $mother_name    = trim($_POST['mother_name']);
-    $mother_phone   = trim($_POST['mother_phone']);
-    $permanent_address = trim($_POST['permanent_address']);
-    $current_address   = trim($_POST['current_address']);
+// Collect data
+$full_name = $_POST['name'];
+$dob = $_POST['dob'];
+$gender = $_POST['gender'];
+$father_name = $_POST['father_name'];
+$mother_name = $_POST['mother_name'];
+$permanent_address = $_POST['permanent_address'];
+$current_address = $_POST['current_address'];
+$mobile_no = $_POST['mobile'];
+$course = $_POST['board'] ?? NULL;
+$semester = $_POST['stream'] ?? NULL; // map stream to semester or field
+$section = $_POST['year_of_passing'] ?? NULL; // optional
 
-    // Academic info
-    $board        = trim($_POST['board']);
-    $stream       = trim($_POST['stream']);
-    $year_of_passing = trim($_POST['year_of_passing']);
-    $gpa          = trim($_POST['gpa']);
-    $school_college = trim($_POST['school_college']);
+// Handle file uploads
+$uploads_dir = "../uploads/students/";
+if(!file_exists($uploads_dir)) mkdir($uploads_dir, 0777, true);
 
-    // UPLOAD FILES
-    $uploads_dir = "../uploads/"; // Make sure this folder exists and is writable
+$profile_photo = $_FILES['photo']['name'] ?? NULL;
+if($profile_photo) move_uploaded_file($_FILES['photo']['tmp_name'], $uploads_dir.$profile_photo);
 
-    // Profile Photo
-    if(isset($_FILES['photo']) && $_FILES['photo']['error'] == 0){
-        $photo_name = time().'_'.basename($_FILES['photo']['name']);
-        move_uploaded_file($_FILES['photo']['tmp_name'], $uploads_dir.$photo_name);
-    }else{
-        $photo_name = '';
+$id_proof = $_FILES['id_proof']['name'] ?? NULL;
+if($id_proof) move_uploaded_file($_FILES['id_proof']['tmp_name'], $uploads_dir.$id_proof);
+
+$marksheets = [];
+if(!empty($_FILES['marksheet']['name'][0])){
+    foreach($_FILES['marksheet']['name'] as $key => $filename){
+        move_uploaded_file($_FILES['marksheet']['tmp_name'][$key], $uploads_dir.$filename);
+        $marksheets[] = $filename;
     }
+}
+$marksheets_serialized = serialize($marksheets);
 
-    // ID Proof
-    if(isset($_FILES['id_proof']) && $_FILES['id_proof']['error'] == 0){
-        $idproof_name = time().'_'.basename($_FILES['id_proof']['name']);
-        move_uploaded_file($_FILES['id_proof']['tmp_name'], $uploads_dir.$idproof_name);
-    }else{
-        $idproof_name = '';
-    }
+$signature = $_FILES['signature']['name'] ?? NULL;
+if($signature) move_uploaded_file($_FILES['signature']['tmp_name'], $uploads_dir.$signature);
 
-    // +2 Marksheets (multiple files)
-    $marksheets_names = [];
-    if(isset($_FILES['marksheet'])){
-        foreach($_FILES['marksheet']['tmp_name'] as $key => $tmp_name){
-            if($_FILES['marksheet']['error'][$key] == 0){
-                $mark_name = time().'_'.$key.'_'.basename($_FILES['marksheet']['name'][$key]);
-                move_uploaded_file($tmp_name, $uploads_dir.$mark_name);
-                $marksheets_names[] = $mark_name;
-            }
-        }
-    }
-    $marksheets_json = json_encode($marksheets_names); // store as JSON in DB
+// Mark registration complete
+$completed = 1;
 
-    // Character certificate
-    if(isset($_FILES['character_certificate']) && $_FILES['character_certificate']['error'] == 0){
-        $cc_name = time().'_'.basename($_FILES['character_certificate']['name']);
-        move_uploaded_file($_FILES['character_certificate']['tmp_name'], $uploads_dir.$cc_name);
-    }else{
-        $cc_name = '';
-    }
+// First, check if profile exists - if not, create it
+$checkStmt = $conn->prepare("SELECT id FROM student_profiles WHERE user_id=?");
+$checkStmt->bind_param("i", $user_id);
+$checkStmt->execute();
+$checkResult = $checkStmt->get_result();
 
-    // Signature
-    if(isset($_FILES['signature']) && $_FILES['signature']['error'] == 0){
-        $signature_name = time().'_'.basename($_FILES['signature']['name']);
-        move_uploaded_file($_FILES['signature']['tmp_name'], $uploads_dir.$signature_name);
-    }else{
-        $signature_name = '';
-    }
+if ($checkResult->num_rows === 0) {
+    // Insert new row if it doesn't exist
+    $insertStmt = $conn->prepare("INSERT INTO student_profiles (user_id, completed_registration) VALUES (?, 0)");
+    $insertStmt->bind_param("i", $user_id);
+    $insertStmt->execute();
+    $insertStmt->close();
+}
+$checkStmt->close();
 
-    // INSERT into student_profiles table (use prepared statement to prevent SQL injection)
-    $user_id = $_SESSION['id']; // logged-in user's ID
-    
-    $sql = "INSERT INTO student_profiles 
-        (user_id, full_name, dob, gender, father_name, mother_name, permanent_address, current_address, mobile_no, profile_photo, id_proof, marksheets, signature, completed_registration)
-        VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
-    
-    $stmt = $conn->prepare($sql);
-    if(!$stmt){
-        echo "Query Error: " . $conn->error;
-        exit;
-    }
-    
-    $stmt->bind_param(
-        "issssssssssss",
-        $user_id, $name, $dob, $gender, $father_name, $mother_name, 
-        $permanent_address, $current_address, $mobile, $photo_name, 
-        $idproof_name, $marksheets_json, $signature_name
-    );
-    
-    if($stmt->execute()){
-        echo "<script>alert('Registration completed successfully!'); window.location='dashboard.php';</script>";
-        exit;
-    }else{
-        echo "Error: " . $stmt->error;
-        exit;
-    }
+// Now update with all the registration data
+$stmt = $conn->prepare("UPDATE student_profiles SET 
+    full_name=?, dob=?, gender=?, father_name=?, mother_name=?, permanent_address=?, current_address=?, mobile_no=?,
+    course=?, semester=?, section=?, profile_photo=?, id_proof=?, marksheets=?, signature=?, completed_registration=?
+    WHERE user_id=?");
 
-}else{
-    header("Location: registration.php"); // if not POST, redirect
+$stmt->bind_param("ssssssssssssssssi",
+    $full_name,$dob,$gender,$father_name,$mother_name,$permanent_address,$current_address,$mobile_no,
+    $course,$semester,$section,$profile_photo,$id_proof,$marksheets_serialized,$signature,$completed,$user_id
+);
+
+if($stmt->execute()){
+    // ✅ After saving, redirect to dashboard
+    header("Location: ../student/dashboard.php");
     exit;
+}else{
+    echo "Error: ".$stmt->error;
 }
 ?>

@@ -92,7 +92,7 @@ a{
 
 <div style="position:relative;">
 <label>Password</label>
-<input type="password" name="password" required>
+<input type="password" name="password" id="password" required>
 <!-- Eye Icon -->
     <span onclick="togglePassword()" 
           style="position:absolute; right:10px; top:50%; transform:translateY(-90%); cursor:pointer;">

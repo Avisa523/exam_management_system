@@ -23,6 +23,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // ✅ SIMPLE PASSWORD CHECK (supports both hashed and plain passwords)
         if (password_verify($password, $user['password']) || $password === $user['password']) {
 
+            // Only students require admin approval; teachers can log in immediately.
+            $status = strtolower($user['status'] ?? 'approved');
+            if ($user['role'] === 'student' && $status !== 'approved') {
+                echo "<script>alert('Your account is pending admin approval.'); window.location='login.php';</script>";
+                exit;
+            }
+
             // Store session values
             $_SESSION['id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
@@ -34,14 +41,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } elseif ($user['role'] == 'teacher') {
                 header("Location: ../teachers/dashboard.php");
             } else {
-                 // Check registration status
-    $student_id = $user['id'];
-    $regQuery = $conn->query("SELECT registration_completed FROM students WHERE id='$student_id'");
-    $regRow = $regQuery->fetch_assoc();
+                // Check if student has completed registration
+                $user_id = $user['id'];
+                $stmtReg = $conn->prepare("SELECT completed_registration FROM student_profiles WHERE user_id=?");
+                $stmtReg->bind_param("i", $user_id);
+                $stmtReg->execute();
+                $regRow = $stmtReg->get_result()->fetch_assoc();
+                $stmtReg->close();
 
-    if ($regRow['registration_completed'] == 0) {
+
+    if ($regRow['completed_registration'] == 0) {
         // Not registered → force registration
-        header("Location: ../student/register.php");
+        header("Location: ../student/registration.php");
     } else {
         // Already registered → normal dashboard
                 header("Location: ../student/dashboard.php");

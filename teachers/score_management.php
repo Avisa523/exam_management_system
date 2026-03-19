@@ -3,7 +3,7 @@ session_start();
 include("../includes/config.php"); // Ensure path is correct
 
 // Check role
-if(!isset($_SESSION['role']) || $_SESSION['role'] !== 'teachers'){
+if(!isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher'){
     header("Location: ../login.php");
     exit();
 }

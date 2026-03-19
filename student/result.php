@@ -7,6 +7,21 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'student'){
     header("Location: ../authentication/login.php");
     exit();
 }
+// 2. Check if registration is completed
+$user_id = $_SESSION['id'];
+$result = $conn->query("SELECT completed_registration FROM student_profiles WHERE user_id='$user_id'");
+
+if($result && $row = $result->fetch_assoc()){
+    if($row['completed_registration'] == 0){
+        // Not registered → force registration
+        header("Location: registration.php");
+        exit;
+    }
+} else {
+    // No profile found → force registration
+    header("Location: registration.php");
+    exit;
+}
 
 // Map users.id to students.id
 $user_id = $_SESSION['id'];

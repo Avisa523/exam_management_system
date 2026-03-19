@@ -27,7 +27,7 @@ $exams = $conn->query("
 <!-- Blue Header -->
 <div class="exam-header-bar">
     <h1>Exam Schedule</h1>
-    <a href="0_dashboard.php" class="home-icon">🏠</a>
+    <a href="dashboard.php" class="home-icon">🏠</a>
 </div><br><br>
 
 <div class="main-content">

@@ -25,7 +25,7 @@ ORDER BY st.full_name
 <header>
 
 
-<a href="0_dashboard.php" class="home-icon">🏠</a>
+<a href="dashboard.php" class="home-icon">🏠</a>
 
 </header>
 
