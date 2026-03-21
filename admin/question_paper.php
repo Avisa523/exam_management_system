@@ -58,6 +58,7 @@ tr:hover {background:#f1f1f1;}
 
 <h2>Admin: Approve Question Papers</h2>
 
+
 <table>
 <tr>
     <th>S.No</th>
@@ -83,8 +84,8 @@ tr:hover {background:#f1f1f1;}
     <td><?php echo $row['subject_name'] ?: '-'; ?></td>
     <td><?php echo $row['teacher_name'] ?: '-'; ?></td>
     <td>
-        <a class="view-btn" href="../teacher/view_question.php?id=<?php echo $row['id']; ?>" target="_blank">View</a>
-        <?php echo nl2br($row['question']); ?>
+        <a class="view-btn" href="../teachers/view_question_paper.php?id=<?php echo $row['id']; ?>" target="_blank">View</a>
+        
     </td>
     <td><?php echo $row['description'] ?: '-'; ?></td>
     <td><?php echo $row['created_at']; ?></td>

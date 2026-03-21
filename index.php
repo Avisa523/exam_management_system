@@ -85,11 +85,12 @@ nav .menu a {
     position: absolute;
     top:20%;
     width: 100%;
-    color:#fff;
+    color:blue;
 }
 .hero-text h1 {
     font-size:50px;
     text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    
 }
 .hero-text p {
     font-size:22px;
@@ -100,6 +101,7 @@ nav .menu a {
     width:100%;
     height:450px;
     object-fit:cover;
+    
 }
 
 /* APPLY NOW BUTTON */
@@ -155,8 +157,15 @@ h2 { color:#0d1b40; margin-bottom:15px; font-size:28px; }
 .notice-card p { font-size:16px; color:#333; }
 
 /* CONTACT */
+.contact header{
+    background: lightgrey; /* light blue background */
+    padding:20px;
+    border-radius:8px;
+    margin-bottom:15px;
+}
+
 .contact-info {
-    background:#bbdefb; /* light blue background */
+    background: lightgrey; /* light blue background */
     padding:20px;
     border-radius:8px;
     margin-bottom:15px;
@@ -290,10 +299,7 @@ a:hover { opacity:0.85; transition:0.3s; }
             <h4>Exam Schedule Released</h4>
             <p>Check your exam timetables online.</p>
         </div>
-        <div class="notice-card">
-            <h4>New Lab Facilities Now Available</h4>
-            <p>Engineering and science labs upgraded.</p>
-        </div>
+        
     </div>
 </section>
 

@@ -2,39 +2,81 @@
 session_start();
 include('../includes/config.php');
 
-// Only teachers or students can view
+// Only logged-in users
 if(!isset($_SESSION['role'])){
     header("Location: ../authentication/login.php");
     exit;
 }
 
-// Support direct question paper view via ?id=... (shows full paper for that subject)
+$subject = '';
+$questions = null;
+
+// Get paper via ID (admin / direct view)
 $questionId = isset($_GET['id']) ? intval($_GET['id']) : null;
 
 if ($questionId) {
-    // Find the subject for this question, then show all approved questions for that subject
-    $questionRow = $conn->query("SELECT * FROM question_papers WHERE id='$questionId' LIMIT 1")->fetch_assoc();
-    $subject_id = $questionRow['subject_id'];
 
-    $questions = $conn->query("SELECT * FROM question_papers WHERE subject_id='$subject_id' AND approved=1 ORDER BY id ASC");
-    $subject = $conn->query("SELECT subject_name FROM subjects WHERE id='$subject_id'")->fetch_assoc()['subject_name'];
-} else {
-    // Optional: For teachers, show only their subject
-    if($_SESSION['role'] == 'teacher'){
-        $teacher_id = $_SESSION['id'];
-        $teacher = $conn->query("SELECT subject_id FROM teachers WHERE id='$teacher_id'")->fetch_assoc();
-        $subject_id = $teacher['subject_id'];
-        $questions = $conn->query("SELECT * FROM question_papers WHERE subject_id='$subject_id' AND approved=1 ORDER BY id ASC");
+    $res = $conn->query("SELECT * FROM question_papers WHERE id='$questionId' LIMIT 1");
+
+    if($res && $res->num_rows > 0){
+
+        $questionRow = $res->fetch_assoc();
+        $subject_id = $questionRow['subject_id'];
+
+        // Only approved questions
+        $questions = $conn->query("
+            SELECT * FROM question_papers 
+            WHERE subject_id='$subject_id' AND approved=1 
+            ORDER BY id ASC
+        ");
+
     } else {
-        // For students, get subject from student info
-        $student_id = $_SESSION['id'];
-        $student = $conn->query("SELECT subject_id FROM students WHERE id='$student_id'")->fetch_assoc();
-        $subject_id = $student['subject_id'];
-        $questions = $conn->query("SELECT * FROM question_papers WHERE subject_id='$subject_id' AND approved=1 ORDER BY id ASC");
+        die("Invalid Question Paper ID");
     }
 
-    // Fetch subject name
-    $subject = $conn->query("SELECT subject_name FROM subjects WHERE id='$subject_id'")->fetch_assoc()['subject_name'];
+} else {
+
+    // Teacher
+    if($_SESSION['role'] == 'teacher'){
+        $teacher_id = $_SESSION['id'];
+
+        $res = $conn->query("SELECT subject_id FROM teachers WHERE id='$teacher_id'");
+
+        if($res && $res->num_rows > 0){
+            $teacher = $res->fetch_assoc();
+            $subject_id = $teacher['subject_id'];
+        } else {
+            die("Teacher not found");
+        }
+
+    // Student
+    } else {
+        $student_id = $_SESSION['id'];
+
+        $res = $conn->query("SELECT subject_id FROM students WHERE id='$student_id'");
+
+        if($res && $res->num_rows > 0){
+            $student = $res->fetch_assoc();
+            $subject_id = $student['subject_id'];
+        } else {
+            die("Student not found");
+        }
+    }
+
+    // Only approved questions
+    $questions = $conn->query("
+        SELECT * FROM question_papers 
+        WHERE subject_id='$subject_id' AND approved=1 
+        ORDER BY id ASC
+    ");
+}
+
+// Get subject name safely
+$subRes = $conn->query("SELECT subject_name FROM subjects WHERE id='$subject_id'");
+if($subRes && $subRes->num_rows > 0){
+    $subject = $subRes->fetch_assoc()['subject_name'];
+} else {
+    $subject = "Unknown Subject";
 }
 ?>
 
@@ -43,17 +85,97 @@ if ($questionId) {
 <head>
 <meta charset="UTF-8">
 <title>Question Paper - <?php echo htmlspecialchars($subject); ?></title>
-<link rel="stylesheet" href="../assets/css/dashboard.css">
-<link rel="stylesheet" href="../assets/css/teachers.css">
-</head>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:40px;
+}
+
+.paper{
+    background:white;
+    padding:40px;
+    max-width:900px;
+    margin:auto;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Header */
+header{
+    text-align:center;
+    border-bottom:2px solid #000;
+    padding-bottom:10px;
+    margin-bottom:25px;
+    position:relative;
+}
+
+header img{
+    width:100px;
+    height:100px;
+}
+
+.marks{
+    position:absolute;
+    top:10px;
+    right:0;
+    text-align:right;
+}
+
+.print-btn{
+    position:absolute;
+    top:10px;
+    left:0;
+    padding:6px 12px;
+    cursor:pointer;
+}
+
+/* Dashboard Button */
+.home-icon{
+    position:absolute;
+    top:10px;
+    right:20px;
+    font-size:26px;
+    text-decoration:none;
+}
+
+@media print{
+    .print-btn,
+    .home-icon{
+        display:none;
+    }
+}
+
+/* Questions */
+.question{
+    margin-bottom:25px;
+}
+
+.answer{
+    border-bottom:1px solid #000;
+    height:50px;
+    margin-top:10px;
+}
+</style>
+
 </head>
 
 <body>
+<!-- Dashboard Button -->
+    <a href="<?php 
+        if($_SESSION['role']=='admin') echo '../admin/dashboard.php';
+        elseif($_SESSION['role']=='teacher') echo '../teachers/dashboard.php';
+        else echo '../students/dashboard.php';
+    ?>" class="home-icon">🏠</a>
 
 <div class="paper">
 
 <header>
 
+   
+
+    <!-- Print -->
     <button class="print-btn" onclick="window.print()">🖨 Print</button>
 
     <img src="../assets/images/everest logo.png" alt="Logo">
@@ -66,27 +188,39 @@ if ($questionId) {
         Pass Marks: 40
     </div>
 
-    <p>Subject: <?php echo htmlspecialchars($subject); ?></p>
-    <p>Date: <?php echo date("Y-m-d"); ?></p>
+    <p><strong>Subject:</strong> <?php echo htmlspecialchars($subject); ?></p>
+    <p><strong>Date:</strong> <?php echo date("Y-m-d"); ?></p>
 
 </header>
 
 <?php $counter = 1; ?>
 
-<?php while($q = $questions->fetch_assoc()): ?>
+<?php if($questions && $questions->num_rows > 0): ?>
 
-<div class="question">
+    <?php while($q = $questions->fetch_assoc()): ?>
 
-<strong>
-<?php echo $counter++; ?>.
-<?php echo htmlspecialchars($q['question']); ?>
-</strong>
+        <div class="question">
 
-<div class="answer"></div>
+            <strong>
+                <?php echo $counter++; ?>.
+                <?php echo htmlspecialchars($q['question']); ?>
+            </strong>
 
-</div>
+            <?php if(!empty($q['description'])): ?>
+                <p><?php echo htmlspecialchars($q['description']); ?></p>
+            <?php endif; ?>
 
-<?php endwhile; ?>
+            <div class="answer"></div>
+
+        </div>
+
+    <?php endwhile; ?>
+
+<?php else: ?>
+
+    <p>No approved questions available.</p>
+
+<?php endif; ?>
 
 <p><strong>Attempt all questions.</strong></p>
 
