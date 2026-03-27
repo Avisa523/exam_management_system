@@ -24,47 +24,17 @@ ORDER BY r.id DESC
 <head>
 
 <title>Admin Exam Results</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#f4f6f8;
-padding:30px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-background:white;
-}
-
-th,td{
-padding:10px;
-border:1px solid #ddd;
-text-align:center;
-}
-
-th{
-background:#2c3e50;
-color:white;
-}
-
-.view-btn{
-background:#3498db;
-color:white;
-padding:6px 10px;
-border-radius:4px;
-text-decoration:none;
-}
-
-</style>
+<link rel="stylesheet" href="../assets/css/admin.css">
 
 </head>
 
 <body>
+    <div class="topbar">
+        <h1>Exam Results</h1>
+    <div><a href="dashboard.php">🏠 </a></div>
+</div>
 
-<h2>Exam Results</h2>
+
 
 <table>
 

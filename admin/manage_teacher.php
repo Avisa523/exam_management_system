@@ -9,25 +9,55 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 
 include(__DIR__ . '/../includes/config.php');
 
-/* ADD TEACHER */
-if(isset($_POST['add_teacher'])){
+$message = '';
+$editingTeacher = null;
+
+// Handle Add / Update Teacher
+if(isset($_POST['save_teacher'])){
     $full_name = $_POST['full_name'];
     $subject = $_POST['subject'];
     $contact_no = $_POST['contact_no'];
     $email = $_POST['email'];
-    $status = 1;
 
-    $conn->query("INSERT INTO teachers(full_name, subject, contact_no, email, status) 
-                  VALUES('$full_name', '$subject', '$contact_no', '$email', '$status')");
+    if(isset($_POST['edit_id']) && !empty($_POST['edit_id'])){
+        // UPDATE
+        $id = intval($_POST['edit_id']);
+        $stmt = $conn->prepare("UPDATE teachers SET full_name=?, subject=?, contact_no=?, email=? WHERE id=?");
+        $stmt->bind_param("ssssi", $full_name, $subject, $contact_no, $email, $id);
+        if($stmt->execute()){
+            $message = 'Teacher updated successfully!';
+        }
+        $stmt->close();
+    } else {
+        // ADD
+        $stmt = $conn->prepare("INSERT INTO teachers(full_name, subject, contact_no, email, status) VALUES(?,?,?,?,1)");
+        $stmt->bind_param("ssss", $full_name, $subject, $contact_no, $email);
+        if($stmt->execute()){
+            $message = 'Teacher added successfully!';
+        }
+        $stmt->close();
+    }
 }
 
-/* DELETE TEACHER */
+// Handle Delete
 if(isset($_GET['delete'])){
-    $id = $_GET['delete'];
+    $id = intval($_GET['delete']);
     $conn->query("DELETE FROM teachers WHERE id=$id");
+    header('Location: teachers.php');
+    exit;
 }
 
-/* FETCH TEACHERS */
+// Handle Edit
+if(isset($_GET['edit'])){
+    $id = intval($_GET['edit']);
+    $stmt = $conn->prepare("SELECT * FROM teachers WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $editingTeacher = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+}
+
+// Fetch all teachers
 $result = $conn->query("SELECT * FROM teachers ORDER BY id DESC");
 ?>
 
@@ -36,101 +66,7 @@ $result = $conn->query("SELECT * FROM teachers ORDER BY id DESC");
 <head>
 <meta charset="UTF-8">
 <title>Manage Teachers - Admin</title>
-<style>
-/* RESET */
-* {margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif;}
-body {background-color: #f4f6f8; color: #333;}
-
-/* TOPBAR */
-.topbar {
-    height: 60px;
-    background-color: #1e90ff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    color: white;
-    font-weight: bold;
-    font-size: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.topbar a {color: white; text-decoration: none; font-size: 22px;}
-
-/* MAIN CONTAINER */
-.container {
-    padding: 20px 40px;
-}
-
-/* FORM */
-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 25px;
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-form input, form select, form button {
-    padding: 8px 10px;
-    font-size: 13px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
-
-form input, form select {flex: 1 1 160px;}
-form button {
-    padding: 7px 12px;
-    font-size: 13px;
-    background-color: #1e90ff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-form button:hover {background-color: #0d6efd;}
-
-/* TABLE */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th {background-color: #1e90ff; color: white;}
-tr:hover {background-color: #f1f1f1;}
-
-/* ACTION BUTTONS */
-.edit-btn, .delete-btn {
-    padding: 5px 8px;
-    border-radius: 4px;
-    color: white;
-    text-decoration: none;
-    font-size: 13px;
-    transition: 0.3s;
-}
-.edit-btn {background-color: #28a745;}
-.delete-btn {background-color: #dc3545;}
-.edit-btn:hover, .delete-btn:hover {opacity: 0.8;}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    form {flex-direction: column;}
-    table, th, td {font-size: 13px;}
-}
-</style>
+<link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
 
@@ -142,16 +78,28 @@ tr:hover {background-color: #f1f1f1;}
 
 <div class="container">
 
-    <!-- ADD TEACHER FORM -->
+    <?php if($message): ?>
+        <div class="success-msg"><?php echo htmlspecialchars($message); ?></div>
+    <?php endif; ?>
+
+    <!-- ADD / EDIT TEACHER FORM -->
+    <h2><?php echo $editingTeacher ? 'Edit Teacher' : 'Add Teacher'; ?></h2>
     <form method="POST">
-        <input type="text" name="full_name" placeholder="Teacher Name" required>
-        <input type="text" name="subject" placeholder="Subject" required>
-        <input type="text" name="contact_no" placeholder="Contact Number" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <button type="submit" name="add_teacher">Add Teacher</button>
+        <?php if($editingTeacher): ?>
+            <input type="hidden" name="edit_id" value="<?php echo $editingTeacher['id']; ?>">
+        <?php endif; ?>
+        <input type="text" name="full_name" placeholder="Teacher Name" required value="<?php echo $editingTeacher ? htmlspecialchars($editingTeacher['full_name']) : ''; ?>">
+        <input type="text" name="subject" placeholder="Subject" required value="<?php echo $editingTeacher ? htmlspecialchars($editingTeacher['subject']) : ''; ?>">
+        <input type="text" name="contact_no" placeholder="Contact Number" required value="<?php echo $editingTeacher ? htmlspecialchars($editingTeacher['contact_no']) : ''; ?>">
+        <input type="email" name="email" placeholder="Email" required value="<?php echo $editingTeacher ? htmlspecialchars($editingTeacher['email']) : ''; ?>">
+        <button type="submit" name="save_teacher"><?php echo $editingTeacher ? 'Update Teacher' : 'Add Teacher'; ?></button>
+        <?php if($editingTeacher): ?>
+            <a href="teachers.php" class="cancel-btn">Cancel</a>
+        <?php endif; ?>
     </form>
 
     <!-- TEACHER TABLE -->
+    <h2>All Teachers</h2>
     <table>
         <tr>
             <th>S.No</th>
@@ -161,22 +109,21 @@ tr:hover {background-color: #f1f1f1;}
             <th>Email</th>
             <th>Action</th>
         </tr>
-
         <?php 
         $counter = 1;
-        while($row = $result->fetch_assoc()){ ?>
+        while($row = $result->fetch_assoc()): ?>
         <tr>
             <td><?php echo $counter++; ?></td>
-            <td><?php echo $row['full_name']; ?></td>
-            <td><?php echo $row['subject']; ?></td>
-            <td><?php echo $row['contact_no']; ?></td>
-            <td><?php echo $row['email']; ?></td>
+            <td><?php echo htmlspecialchars($row['full_name']); ?></td>
+            <td><?php echo htmlspecialchars($row['subject']); ?></td>
+            <td><?php echo htmlspecialchars($row['contact_no']); ?></td>
+            <td><?php echo htmlspecialchars($row['email']); ?></td>
             <td>
-                <a class="edit-btn" href="#">Edit</a>
+                <a class="edit-btn" href="?edit=<?php echo $row['id']; ?>">Edit</a>
                 <a class="delete-btn" href="?delete=<?php echo $row['id']; ?>" onclick="return confirm('Delete this teacher?')">Delete</a>
             </td>
         </tr>
-        <?php } ?>
+        <?php endwhile; ?>
     </table>
 
 </div>

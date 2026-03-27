@@ -30,3 +30,17 @@ document.addEventListener("DOMContentLoaded", function() {
     window.nextStep = nextStep;
     window.prevStep = prevStep;
 });
+
+function validateFileSize(input, maxMB) {
+    const files = input.files;
+    const maxSize = maxMB * 1024 * 1024; // Convert MB to bytes
+
+    for (let i = 0; i < files.length; i++) {
+        if (files[i].size > maxSize) {
+            alert(`File "${files[i].name}" exceeds ${maxMB} MB.`);
+            input.value = ''; // Clear the input
+            return false;
+        }
+    }
+    return true;
+}

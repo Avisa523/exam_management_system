@@ -7,7 +7,40 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'student'){
     header("Location: ../authentication/login.php");
     exit;
 }
+ 
+// // File size limits (in bytes)
+// $maxIDProof = 2 * 1024 * 1024;       // 2MB
+// $maxMarksheet = 5 * 1024 * 1024;     // 5MB
+// $maxPhoto = 1 * 1024 * 1024;         // 1MB
+// $maxSignature = 500 * 1024;          // 500KB
 
+// // Check if form is submitted
+// if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+//     // ID Proof
+//     if (isset($_FILES['id_proof']) && $_FILES['id_proof']['size'] > $maxIDProof) {
+//         die("ID Proof file size exceeds 2MB!");
+//     }
+
+//     // +2 Marksheets (multiple files)
+//     if (isset($_FILES['marksheet'])) {
+//         foreach ($_FILES['marksheet']['size'] as $size) {
+//             if ($size > $maxMarksheet) {
+//                 die("+2 Marksheets file size exceeds 5MB!");
+//             }
+//         }
+//     }
+
+//     // Profile photo
+//     if (isset($_FILES['photo']) && $_FILES['photo']['size'] > $maxPhoto) {
+//         die("Profile photo exceeds 1MB!");
+//     }
+
+//     // Signature
+//     if (isset($_FILES['signature']) && $_FILES['signature']['size'] > $maxSignature) {
+//         die("Signature file exceeds 500KB!");
+//     } 
+// }
 $user_id = $_SESSION['id'];
 
 // Collect data

@@ -45,7 +45,6 @@ $results = $conn->query("
 <head>
     <title>Approve / Edit Results</title>
     <link rel="stylesheet" href="../assets/css/teachers.css">
-   
 </head>
 <body>
     <header>

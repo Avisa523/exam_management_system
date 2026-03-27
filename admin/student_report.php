@@ -46,14 +46,7 @@ $stmt->close();
 <html>
 <head>
 <title>Student Report - <?php echo htmlspecialchars($student['full_name']); ?></title>
-<style>
-body { font-family: Arial; background: #f4f6f8; padding: 30px; }
-table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }
-th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
-th { background: #2c3e50; color: white; }
-.back-btn { margin: 20px 0; display: inline-block; padding: 8px 16px; background: #2980b9; color: white; text-decoration: none; border-radius: 4px; }
-.back-btn:hover { background: #1c5980; }
-</style>
+<link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
 

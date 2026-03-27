@@ -1,5 +1,6 @@
 <?php
 session_start();
+include('../includes/config.php');
 
 // Only admin can access
 if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
@@ -7,99 +8,191 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
     exit;
 }
 
-include(__DIR__ . '/../includes/config.php');
+// Manage approve/disapprove
+if(isset($_POST['action']) && isset($_POST['question_id'])){
+    $id = intval($_POST['question_id']);
 
-// Approve/Disapprove a question paper
-if(isset($_GET['approve'])){
-    $id = intval($_GET['approve']);
-    $conn->query("UPDATE question_papers SET approved=1 WHERE id=$id");
+    if($_POST['action'] === 'approve'){
+        $stmt = $conn->prepare('UPDATE question_papers SET approved=1, disapproval_reason=NULL WHERE id=?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $stmt->close();
+        header('Location: question_paper.php?msg=approved');
+        exit;
+    }
+
+    if($_POST['action'] === 'disapprove' && !empty(trim($_POST['reason']))){
+        $reason = trim($_POST['reason']);
+        $stmt = $conn->prepare('UPDATE question_papers SET approved=2, disapproval_reason=? WHERE id=?');
+        $stmt->bind_param('si', $reason, $id);
+        $stmt->execute();
+        $stmt->close();
+        header('Location: question_paper.php?msg=disapproved');
+        exit;
+    }
 }
 
-if(isset($_GET['disapprove'])){
-    $id = intval($_GET['disapprove']);
-    $conn->query("UPDATE question_papers SET approved=2 WHERE id=$id");
-}
+$viewId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$renderPaperView = false;
+$paper = null;
 
-// Fetch all question papers with teacher and subject info
-$result = $conn->query("
-    SELECT qp.id, qp.title, qp.question, qp.description, qp.created_at, qp.approved,
-           t.full_name AS teacher_name, s.subject_name
-    FROM question_papers qp
-    LEFT JOIN teachers t ON t.id = qp.teacher_id
-    LEFT JOIN subjects s ON s.id = qp.subject_id
-    ORDER BY qp.created_at DESC
-");
+if($viewId){
+    $stmt = $conn->prepare('SELECT qp.*, t.full_name AS teacher_name, s.subject_name 
+        FROM question_papers qp 
+        LEFT JOIN teachers t ON t.id=qp.teacher_id 
+        LEFT JOIN subjects s ON s.id=qp.subject_id 
+        WHERE qp.id=? LIMIT 1');
+    $stmt->bind_param('i', $viewId);
+    $stmt->execute();
+    $paper = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if(!$paper){
+        die('Question paper not found.');
+    }
+
+    $renderPaperView = true;
+} else {
+    $papers = $conn->query('SELECT qp.*, t.full_name AS teacher_name, s.subject_name 
+        FROM question_papers qp 
+        LEFT JOIN teachers t ON t.id=qp.teacher_id 
+        LEFT JOIN subjects s ON s.id=qp.subject_id 
+        ORDER BY qp.created_at DESC');
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin: Approve Question Papers</title>
-<style>
-body {font-family: Arial, sans-serif; background:#f4f6f8; padding:20px;}
-h2 {margin-bottom:20px;}
-table {width:100%; border-collapse: collapse; background: white; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-th, td {padding:12px 15px; border-bottom:1px solid #ddd; text-align:left;}
-th {background:#1e90ff; color:white;}
-tr:hover {background:#f1f1f1;}
-.approve-btn, .disapprove-btn {padding:5px 8px; color:white; border-radius:4px; text-decoration:none; font-size:13px; transition:0.3s;}
-.approve-btn {background:#28a745;}
-.disapprove-btn {background:#dc3545;}
-.approve-btn:hover, .disapprove-btn:hover {opacity:0.8;}
-.status-pending {color:#ffa500; font-weight:bold;}
-.status-approved {color:#28a745; font-weight:bold;}
-.status-disapproved {color:#dc3545; font-weight:bold;}
-.view-btn {padding:5px 8px; background:#1e90ff; color:white; text-decoration:none; border-radius:4px; font-size:13px;}
-.view-btn:hover {opacity:0.8;}
-</style>
+<link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
+    <div class="topbar">
+    <h1>Question Paper</h1>
+    <div><a href="dashboard.php">🏠</a></div>
+</div>
+
+<?php if($renderPaperView): ?>
+
+<div>
+
+    <div class="admin-only">
+        <a href="question_paper.php">← Back to List</a>
+        <button onclick="window.print()">Print</button>
+    </div>
+
+    <div>
+        <img src="../assets/images/everest logo.png" alt="Logo">
+        <h2>Everest College</h2>
+        <h3>Mid-term Question Paper</h3>
+
+        <div>
+            <div><strong>Subject:</strong> <?php echo htmlspecialchars($paper['subject_name']); ?></div>
+            <div><strong>Date:</strong> <?php echo date('Y-m-d'); ?></div>
+            <div>
+                <div><strong>Full Marks:</strong> 100</div>
+                <div><strong>Pass Marks:</strong> 40</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-only">
+        <strong>Teacher:</strong> <?php echo htmlspecialchars($paper['teacher_name']); ?> |
+        <strong>Status:</strong>
+
+        <?php
+        if($paper['approved']==1) echo 'Approved';
+        elseif($paper['approved']==2) echo 'Disapproved';
+        else echo 'Pending';
+        ?>
+
+        <?php if(!empty($paper['disapproval_reason'])): ?>
+            <div>
+                <strong>Reason:</strong> <?php echo htmlspecialchars($paper['disapproval_reason']); ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="question">
+        <h4>1. <?php echo htmlspecialchars($paper['title'] ?: $paper['question']); ?></h4>
+        <p><?php echo nl2br(htmlspecialchars($paper['question'])); ?></p>
+
+        <?php if(!empty($paper['description'])): ?>
+            <p><?php echo nl2br(htmlspecialchars($paper['description'])); ?></p>
+        <?php endif; ?>
+
+        <div class="answer"></div>
+    </div>
+
+    <p><strong>Attempt all questions.</strong></p>
+
+    <hr class="admin-only">
+
+    <div class="admin-only">
+        <h4>Admin Decision</h4>
+
+        <form method="post">
+            <input type="hidden" name="question_id" value="<?php echo $paper['id']; ?>">
+
+            <button type="submit" name="action" value="approve">Approve</button>
+
+            <a href="edit_question.php?id=<?php echo $paper['id']; ?>">Edit</a>
+
+            <div>
+                <label>Reject with reason:</label>
+                <textarea name="reason" rows="3"></textarea>
+                <button type="submit" name="action" value="disapprove">Disapprove</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<?php else: ?>
 
 <h2>Admin: Approve Question Papers</h2>
 
-
-<table>
+<table border="1" cellpadding="10">
 <tr>
-    <th>S.No</th>
+    <th>Id</th>
     <th>Title</th>
     <th>Subject</th>
     <th>Teacher</th>
-    <th>Question</th>
-    <th>Description</th>
     <th>Created At</th>
     <th>Status</th>
+    <th>Reason</th>
     <th>Action</th>
 </tr>
 
-<?php $counter=1; while($row = $result->fetch_assoc()){ 
-    $status_text = '';
-    if($row['approved']==0) $status_text = '<span class="status-pending">Pending</span>';
-    elseif($row['approved']==1) $status_text = '<span class="status-approved">Approved</span>';
-    elseif($row['approved']==2) $status_text = '<span class="status-disapproved">Disapproved</span>';
-?>
-<tr>
-    <td><?php echo $counter++; ?></td>
-    <td><?php echo $row['title']; ?></td>
-    <td><?php echo $row['subject_name'] ?: '-'; ?></td>
-    <td><?php echo $row['teacher_name'] ?: '-'; ?></td>
-    <td>
-        <a class="view-btn" href="../teachers/view_question_paper.php?id=<?php echo $row['id']; ?>" target="_blank">View</a>
-        
-    </td>
-    <td><?php echo $row['description'] ?: '-'; ?></td>
-    <td><?php echo $row['created_at']; ?></td>
-    <td><?php echo $status_text; ?></td>
-    <td>
-        <?php if($row['approved']==0){ ?>
-            <a class="approve-btn" href="?approve=<?php echo $row['id']; ?>">Approve</a>
-            <a class="disapprove-btn" href="?disapprove=<?php echo $row['id']; ?>">Disapprove</a>
-        <?php } else { echo '-'; } ?>
-    </td>
-</tr>
-<?php } ?>
+<?php if($papers && $papers->num_rows > 0): ?>
+    <?php while($row = $papers->fetch_assoc()): ?>
+        <tr>
+            <td><?php echo $row['id']; ?></td>
+            <td><?php echo htmlspecialchars($row['title']); ?></td>
+            <td><?php echo htmlspecialchars($row['subject_name']); ?></td>
+            <td><?php echo htmlspecialchars($row['teacher_name']); ?></td>
+            <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+            <td>
+                <?php
+                if($row['approved']==1) echo 'Approved';
+                elseif($row['approved']==2) echo 'Disapproved';
+                else echo 'Pending';
+                ?>
+            </td>
+            <td><?php echo htmlspecialchars($row['disapproval_reason'] ?? ''); ?></td>
+            <td>
+                <a href="question_paper.php?id=<?php echo $row['id']; ?>">View</a>
+            </td>
+        </tr>
+    <?php endwhile; ?>
+<?php else: ?>
+    <tr><td colspan="8">No question papers found.</td></tr>
+<?php endif; ?>
 
 </table>
+
+<?php endif; ?>
 
 </body>
 </html>

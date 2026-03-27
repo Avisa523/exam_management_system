@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Only admin can access
 if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
     header('Location: ../authentication/login.php');
     exit;
@@ -9,33 +8,62 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 
 include(__DIR__ . '/../includes/config.php');
 
+$message = '';
+$editingStudent = null;
+
 // Approve student
 if(isset($_GET['approve'])){
-    $id = $_GET['approve'];
-
+    $id = intval($_GET['approve']);
     $conn->query("UPDATE users SET status='approved' WHERE id='$id'");
-    $conn->query("UPDATE students SET approved=1 WHERE id='$id'");
+    $conn->query("UPDATE students SET status=1 WHERE id='$id'");
 }
 
-/* ADD STUDENT */
-if(isset($_POST['add_student'])){
+// Handle Add Student
+if(isset($_POST['save_student'])){
     $full_name = $_POST['full_name'];
     $semester = $_POST['semester'];
     $contact_no = $_POST['contact_no'];
     $gender = $_POST['gender'];
-    $status = 1;
 
-    $conn->query("INSERT INTO students(full_name, semester, contact_no, gender, status) 
-                  VALUES('$full_name', '$semester', '$contact_no', '$gender', '$status')");
+    if(isset($_POST['edit_id']) && !empty($_POST['edit_id'])){
+        // UPDATE
+        $id = intval($_POST['edit_id']);
+        $stmt = $conn->prepare("UPDATE students SET full_name=?, semester=?, contact_no=?, gender=? WHERE id=?");
+        $stmt->bind_param('ssssi', $full_name, $semester, $contact_no, $gender, $id);
+        if($stmt->execute()){
+            $message = 'Student updated successfully!';
+        }
+        $stmt->close();
+    } else {
+        // ADD
+        $stmt = $conn->prepare("INSERT INTO students(full_name, semester, contact_no, gender, status) VALUES(?,?,?,?,1)");
+        $stmt->bind_param('ssss', $full_name, $semester, $contact_no, $gender);
+        if($stmt->execute()){
+            $message = 'Student added successfully!';
+        }
+        $stmt->close();
+    }
 }
 
-/* DELETE STUDENT */
+// Handle Delete
 if(isset($_GET['delete'])){
-    $id = $_GET['delete'];
+    $id = intval($_GET['delete']);
     $conn->query("DELETE FROM students WHERE id=$id");
+    header('Location: students.php');
+    exit;
 }
 
-/* FETCH STUDENTS */
+// Handle Edit
+if(isset($_GET['edit'])){
+    $id = intval($_GET['edit']);
+    $stmt = $conn->prepare("SELECT * FROM students WHERE id=?");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $editingStudent = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+}
+
+// Fetch all students
 $result = $conn->query("SELECT * FROM students ORDER BY id DESC");
 ?>
 
@@ -44,105 +72,10 @@ $result = $conn->query("SELECT * FROM students ORDER BY id DESC");
 <head>
 <meta charset="UTF-8">
 <title>Manage Students - Admin</title>
-<style>
-/* RESET */
-* {margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif;}
-body {background-color: #f4f6f8; color: #333;}
-
-/* TOPBAR */
-.topbar {
-    height: 60px;
-    background-color: #1e90ff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    color: white;
-    font-weight: bold;
-    font-size: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.topbar a {color: white; text-decoration: none; font-size: 22px;}
-
-/* MAIN CONTAINER */
-.container {
-    padding: 20px 40px;
-}
-
-/* FORM */
-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 25px;
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-form input, form select, form button {
-    padding: 8px 10px;
-    font-size: 13px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
-
-form input, form select {flex: 1 1 160px;} /* smaller width */
-form button {
-    padding: 7px 12px;
-    font-size: 13px;
-    background-color: #1e90ff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-form button:hover {background-color: #0d6efd;}
-
-/* TABLE */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th {background-color: #1e90ff; color: white;}
-tr:hover {background-color: #f1f1f1;}
-
-/* ACTION BUTTONS */
-.edit-btn, .delete-btn {
-    padding: 5px 8px;
-    border-radius: 4px;
-    color: white;
-    text-decoration: none;
-    font-size: 13px;
-    transition: 0.3s;
-}
-.edit-btn {background-color: #28a745;}
-.delete-btn {background-color: #dc3545;}
-.edit-btn:hover, .delete-btn:hover {opacity: 0.8;}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    form {flex-direction: column;}
-    table, th, td {font-size: 13px;}
-}
-</style>
+<link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
     <div>Exam Management System - Admin</div>
     <div><a href="dashboard.php">🏠 Dashboard</a></div>
@@ -150,21 +83,37 @@ tr:hover {background-color: #f1f1f1;}
 
 <div class="container">
 
-    <!-- ADD STUDENT FORM -->
+    <?php if($message): ?>
+        <div class="success-msg"><?php echo htmlspecialchars($message); ?></div>
+    <?php endif; ?>
+
+    <!-- ADD / EDIT STUDENT FORM -->
+    <h2><?php echo $editingStudent ? 'Edit Student' : 'Add Student'; ?></h2>
     <form method="POST">
-        <input type="text" name="full_name" placeholder="Student Name" required>
-        <input type="text" name="semester" placeholder="Semester" required>
-        <input type="text" name="contact_no" placeholder="Contact Number" required>
+        <?php if($editingStudent): ?>
+            <input type="hidden" name="edit_id" value="<?php echo $editingStudent['id']; ?>">
+        <?php endif; ?>
+        <input type="text" name="full_name" placeholder="Student Name" required value="<?php echo $editingStudent ? htmlspecialchars($editingStudent['full_name']) : ''; ?>">
+        <input type="text" name="semester" placeholder="Semester" required value="<?php echo $editingStudent ? htmlspecialchars($editingStudent['semester']) : ''; ?>">
+        <input type="text" name="contact_no" placeholder="Contact Number" required value="<?php echo $editingStudent ? htmlspecialchars($editingStudent['contact_no']) : ''; ?>">
         <select name="gender" required>
             <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
+            <option value="Male" <?php echo ($editingStudent && $editingStudent['gender']=='Male') ? 'selected' : ''; ?>>Male</option>
+            <option value="Female" <?php echo ($editingStudent && $editingStudent['gender']=='Female') ? 'selected' : ''; ?>>Female</option>
+            <option value="Other" <?php echo ($editingStudent && $editingStudent['gender']=='Other') ? 'selected' : ''; ?>>Other</option>
         </select>
-        <button type="submit" name="add_student">Add Student</button>
+        <div class="form-submit-wrap">
+    <button type="submit" name="save_student">
+        <?php echo $editingStudent ? 'Update Student' : 'Add Student'; ?>
+    </button>
+    <?php if($editingStudent): ?>
+        <a href="./manage_student.php" class="cancel-btn">Cancel</a>
+    <?php endif; ?>
+</div>
     </form>
 
     <!-- STUDENT TABLE -->
+    <h2>All Students</h2>
     <table>
         <tr>
             <th>S.No</th>
@@ -174,49 +123,22 @@ tr:hover {background-color: #f1f1f1;}
             <th>Gender</th>
             <th>Action</th>
         </tr>
-
         <?php 
         $counter = 1;
-        while($row = $result->fetch_assoc()){ ?>
+        while($row = $result->fetch_assoc()): ?>
         <tr>
-            <td><?php echo $counter++; ?></td>  <!-- Serial number -->
-            <td><?php echo $row['full_name']; ?></td>
-            <td><?php echo $row['semester']; ?></td>
-            <td><?php echo $row['contact_no']; ?></td>
-            <td><?php echo $row['gender']; ?></td>
+            <td><?php echo $counter++; ?></td>
+            <td><?php echo htmlspecialchars($row['full_name']); ?></td>
+            <td><?php echo htmlspecialchars($row['semester']); ?></td>
+            <td><?php echo htmlspecialchars($row['contact_no']); ?></td>
+            <td><?php echo htmlspecialchars($row['gender']); ?></td>
             <td>
-                <a class="edit-btn" href="#">Edit</a>
-                <a class="delete-btn" href="?delete=<?php echo $row['id']; ?>" 
-                   onclick="return confirm('Delete this student?')">Delete</a>
+                <a class="edit-btn" href="?edit=<?php echo $row['id']; ?>">Edit</a>
+                <a class="delete-btn" href="?delete=<?php echo $row['id']; ?>" onclick="return confirm('Delete this student?')">Delete</a>
             </td>
         </tr>
-        <?php } ?>
+        <?php endwhile; ?>
     </table>
-
-    <h2>Pending Students</h2>
-
-<table border="1" cellpadding="10">
-<tr>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Action</th>
-</tr>
-
-<?php
-$result = $conn->query("SELECT * FROM users WHERE role='student' AND status='pending'");
-
-while($row = $result->fetch_assoc()){
-?>
-<tr>
-    <td><?php echo $row['username']; ?></td>
-    <td><?php echo $row['email']; ?></td>
-    <td>
-        <a href="?approve=<?php echo $row['id']; ?>">Approve</a><br><br>
-        <a href="?delete=<?php echo $row['id']; ?>" onclick="return confirm('Delete this student?')">Delete</a>
-    </td>
-</tr>
-<?php } ?>
-</table>
 
 </div>
 </body>

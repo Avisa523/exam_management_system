@@ -49,6 +49,8 @@ CREATE TABLE question_papers (
     FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
 );
 
+ALTER TABLE question_papers ADD COLUMN disapproval_reason TEXT NULL
+
 
 CREATE TABLE exam_results (
     id INT AUTO_INCREMENT PRIMARY KEY,

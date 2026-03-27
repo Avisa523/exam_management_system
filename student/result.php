@@ -54,7 +54,7 @@ $final_result = ($percentage >= 40) ? "PASS" : "FAIL";
 <head>
     <meta charset="UTF-8">
     <title>Final Result</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/student.css">
 </head>
 <body>
 

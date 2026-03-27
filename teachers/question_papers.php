@@ -10,9 +10,9 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'teacher'){
 
 $teacher_id = $_SESSION['id'];
 
-// Fetch all questions for this teacher (ignore approved for now)
+// Fetch all questions for this teacher including approval status and disapproval reason
 $questions = $conn->query("
-SELECT question, description 
+SELECT id, title, question, description, approved, disapproval_reason 
 FROM question_papers 
 WHERE teacher_id='$teacher_id'
 ORDER BY id ASC
@@ -143,10 +143,19 @@ header img{
     <?php while($q = $questions->fetch_assoc()): ?>
     <div class="question">
         <strong><?php echo $counter++; ?>. <?php echo htmlspecialchars($q['question']); ?></strong>
+        <p>Status: 
+            <?php
+            if($q['approved']==1) echo '<span style="color:#28a745;font-weight:bold;">Approved</span>';
+            elseif($q['approved']==2) echo '<span style="color:#dc3545;font-weight:bold;">Disapproved</span>';
+            else echo '<span style="color:#f39c12;font-weight:bold;">Pending</span>';
+            ?>
+        </p>
+        <?php if($q['approved']==2 && !empty($q['disapproval_reason'])): ?>
+            <p><strong>Disapproval Reason:</strong> <?php echo htmlspecialchars($q['disapproval_reason']); ?></p>
+        <?php endif; ?>
         <?php if(!empty($q['description'])): ?>
             <p><?php echo htmlspecialchars($q['description']); ?></p>
         <?php endif; ?>
-        <div class="answer"></div>
     </div>
     <?php endwhile; ?>
 <?php endif; ?>

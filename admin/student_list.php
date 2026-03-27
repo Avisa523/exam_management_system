@@ -16,30 +16,7 @@ $result = $conn->query("SELECT * FROM students ORDER BY id ASC");
 <html>
 <head>
 <title>Students List</title>
-<style>
-body { font-family: Arial; background: #f4f6f8; padding: 30px; }
-table { width: 100%; border-collapse: collapse; background: white; }
-th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
-th { background: #2c3e50; color: white; }
-a.view-btn { padding: 6px 12px; background: #2980b9; color: white; text-decoration: none; border-radius: 4px; }
-a.view-btn:hover { background: #1c5980; }
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.dashboard-btn {
-    padding: 6px 12px;
-    background: #27ae60;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-}
-.dashboard-btn:hover {
-    background: #1e8449;
-}
-</style>
+<link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
 
