@@ -33,10 +33,8 @@ $username = $_SESSION['username'] ?? 'Student';
 
 $fields = [
     "Full Name" => $student['full_name'] ?? '',
-    "Full Name (Devnagari)" => $student['full_name_dev'] ?? '',
     "Gender" => $student['gender'] ?? '',
     "Dob" => $student['dob'] ?? '',
-    "Citizenship No" => $student['citizenship_no'] ?? '',
     "Father's Name" => $student['father_name'] ?? '',
     "Father Phone" => $student['father_phone'] ?? '',
     "Mother's Name" => $student['mother_name'] ?? '',
@@ -73,25 +71,6 @@ function display_file($file, $folder="students"){
 <meta charset="UTF-8">
 <title>Student Profile</title>
 <link rel="stylesheet" href="../assets/css/profile.css">
-<style>
-body { font-family: Arial, sans-serif; background:#f5f6f8; margin:0; padding:0; color:#333; }
-.topbar { display:flex; justify-content:space-between; align-items:center; background:#1a73e8; color:#fff; padding:15px 30px; }
-.topbar .title { font-size:18px; font-weight:bold; }
-.topbar .user a.back-button { color:#fff; text-decoration:none; margin-right:15px; font-size:20px; }
-
-.full-content { max-width:1000px; margin:30px auto; padding:0 20px; }
-.dashboard-box { background:#fff; padding:25px 30px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-.dashboard-box h2 { font-size:22px; margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px; text-align:center; }
-
-.profile-photo { text-align:center; margin-bottom:20px; }
-.profile-photo img { width:150px; height:150px; object-fit:cover; border-radius:50%; border:2px solid #1a73e8; }
-
-table { width:100%; border-collapse:collapse; margin-top:20px; }
-table, th, td { border:1px solid #ddd; }
-th, td { padding:10px 15px; text-align:left; vertical-align:top; }
-th { background:#f2f2f2; width:30%; }
-.uploaded-img { max-width:150px; height:auto; margin-top:5px; border:1px solid #ccc; border-radius:4px; }
-</style>
 </head>
 <body>
 

@@ -20,7 +20,7 @@ $exams = $conn->query("
 <html>
 <head>
     <title>Exam Schedule</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/teachers.css">
 </head>
 <body>
 

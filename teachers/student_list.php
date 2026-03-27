@@ -32,8 +32,8 @@ $students = $conn->query("
 <head>
 <meta charset="UTF-8">
 <title>Student List</title>
-<link rel="stylesheet" href="../assets/css/style.css">
-<style>
+<link rel="stylesheet" href="../assets/css/teachers.css">
+<!-- <style>
 table {
     width: 100%;
     border-collapse: collapse;
@@ -57,7 +57,7 @@ table th {
 .edit-btn:hover {
     background: #0b5ed7;
 }
-</style>
+</style> -->
 </head>
 
 <header>

@@ -38,6 +38,7 @@ if($subject_id){
 <head>
 <meta charset="UTF-8">
 <title>Question Paper</title>
+<link rel="stylesheet" href="../assets/css/question_paper.css">
 
 <style>
 body{

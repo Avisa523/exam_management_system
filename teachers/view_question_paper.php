@@ -85,8 +85,8 @@ if($subRes && $subRes->num_rows > 0){
 <head>
 <meta charset="UTF-8">
 <title>Question Paper - <?php echo htmlspecialchars($subject); ?></title>
-
-<style>
+<link rel="stylesheet" href="../assets/css/question_paper.css">
+<!-- <style>
 body{
     font-family: Arial, sans-serif;
     background:#f4f6f9;
@@ -157,7 +157,7 @@ header img{
     height:50px;
     margin-top:10px;
 }
-</style>
+</style> -->
 
 </head>
 

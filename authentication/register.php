@@ -133,14 +133,15 @@ function togglePassword() {
 
 <script>
 function showRoleFields(){
-    document.getElementById("student").style.display = "none";
-    document.getElementById("teacher").style.display = "none";
-    document.getElementById("admin").style.display = "none";
+    // Safely toggle role-based sections if present
+    ["student", "teacher", "admin"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+    });
 
-    let role = document.getElementById("role").value;
-    if(role){
-        document.getElementById(role).style.display = "block";
-    }
+    const role = document.getElementById("role").value;
+    const selected = document.getElementById(role);
+    if (selected) selected.style.display = "block";
 }
 </script>
 

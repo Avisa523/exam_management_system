@@ -44,15 +44,8 @@ $results = $conn->query("
 <html>
 <head>
     <title>Approve / Edit Results</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <style>
-        table { border-collapse: collapse; width: 80%; margin-top: 20px;}
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center;}
-        th { background-color: #f2f2f2;}
-        input[type="number"] { width: 60px; }
-        button { padding: 5px 10px; cursor: pointer; }
-        
-    </style>
+    <link rel="stylesheet" href="../assets/css/teachers.css">
+   
 </head>
 <body>
     <header>

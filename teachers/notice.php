@@ -17,20 +17,8 @@ $notices = $conn->query("SELECT * FROM noticeboard ORDER BY posted_at DESC");
 <head>
 <meta charset="UTF-8">
 <title>Teacher Notices</title>
-<link rel="stylesheet" href="../assets/css/style.css">
-<style>
-.notice-box {
-    background: #fff;
-    border-left: 5px solid #4CAF50;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-.notice-box h3 { color: #0d6efd; margin-bottom: 8px; }
-.notice-box p { color: #555; margin-bottom: 5px; }
-.notice-box small { color: #888; font-size: 12px; }
-</style>
+<link rel="stylesheet" href="../assets/css/teachers.css">
+
 </head>
 <header>
     <h1>Notice Board</h1>

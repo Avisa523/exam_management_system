@@ -76,19 +76,7 @@ $questions = $conn->query("SELECT * FROM question_papers ORDER BY id DESC");
 <head>
 <meta charset="UTF-8">
 <title>Manage Questions</title>
-<style>
-body{ font-family: Arial; background:#f4f6f9; padding:30px; }
-.card{ background:white; padding:25px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.08); }
-h2{ margin-bottom:20px; }
-input, textarea{ width:100%; padding:8px; margin-top:5px; margin-bottom:15px; border:1px solid #ccc; border-radius:4px; }
-button{ background:#007bff; color:white; border:none; padding:10px 18px; border-radius:4px; cursor:pointer; }
-table{ width:100%; border-collapse:collapse; margin-top:20px; }
-th,td{ border:1px solid #ddd; padding:8px; text-align:left; }
-th{ background:#007bff; color:white; }
-a{ text-decoration:none; margin-right:10px; }
-.delete{ color:red; }
-.edit{ color:green; }
-</style>
+<link rel="stylesheet" href="../assets/css/teachers.css">
 </head>
 <body>
 

@@ -30,7 +30,7 @@ $notices = $conn->query("SELECT * FROM noticeboard ORDER BY posted_at DESC");
 <head>
     <meta charset="UTF-8">
     <title>Noticeboard</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/student.css">
     
 </head>
 <body>
