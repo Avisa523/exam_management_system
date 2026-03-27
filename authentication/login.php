@@ -4,74 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <style>
-        /* Reset some default styles */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-
-        body {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(to right, #0d6efd, #6c63ff);
-        }
-
-        .login-container {
-            background: #fff;
-            padding: 40px 30px;
-            border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            width: 350px;
-            text-align: center;
-        }
-
-        h1 {
-            margin-bottom: 25px;
-            color: #0d6efd;
-        }
-
-        label {
-            display: block;
-            text-align: left;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
-
-        input[type="submit"] {
-            background-color: #0d6efd;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-
-        p {
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        a {
-            color: #0d6efd;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
     <div class="login-container">
@@ -117,6 +50,8 @@ function togglePassword() {
         </form>
 
         <p>Not registered? <a href="register.php">Register here</a></p>
+        <p><a href="forgot_password.php">Forgot Password?</a></p>
+        
     </div>
 </body>
 </html>

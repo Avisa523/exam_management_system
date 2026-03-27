@@ -8,17 +8,30 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 
 include(__DIR__ . '/../includes/config.php');
 
-$message = '';
+$message = ''; // initialize
 $editingStudent = null;
 
 // Approve student
 if(isset($_GET['approve'])){
     $id = intval($_GET['approve']);
-    $conn->query("UPDATE users SET status='approved' WHERE id='$id'");
-    $conn->query("UPDATE students SET status=1 WHERE id='$id'");
+    // Update in students table
+    $conn->query("UPDATE students SET status='approved', approved=1 WHERE id='$id'");
+    // Update in users table
+    $conn->query("UPDATE users u JOIN students s ON u.id=s.user_id SET u.status='approved' WHERE s.id='$id'");
+    header('Location: manage_student.php');
+    exit;
 }
 
-// Handle Add Student
+// Disapprove student
+if(isset($_GET['disapprove'])){
+    $id = intval($_GET['disapprove']);
+    $conn->query("UPDATE students SET status='pending', approved=0 WHERE id='$id'");
+    $conn->query("UPDATE users SET status='pending' WHERE id=(SELECT user_id FROM students WHERE id='$id')");
+    header('Location: manage_student.php');
+    exit;
+}
+
+// Handle Add / Edit Student
 if(isset($_POST['save_student'])){
     $full_name = $_POST['full_name'];
     $semester = $_POST['semester'];
@@ -35,8 +48,8 @@ if(isset($_POST['save_student'])){
         }
         $stmt->close();
     } else {
-        // ADD
-        $stmt = $conn->prepare("INSERT INTO students(full_name, semester, contact_no, gender, status) VALUES(?,?,?,?,1)");
+        // ADD (default pending)
+        $stmt = $conn->prepare("INSERT INTO students (full_name, semester, contact_no, gender, status, approved) VALUES (?, ?, ?, ?, 'pending', 0)");
         $stmt->bind_param('ssss', $full_name, $semester, $contact_no, $gender);
         if($stmt->execute()){
             $message = 'Student added successfully!';
@@ -49,7 +62,7 @@ if(isset($_POST['save_student'])){
 if(isset($_GET['delete'])){
     $id = intval($_GET['delete']);
     $conn->query("DELETE FROM students WHERE id=$id");
-    header('Location: students.php');
+    header('Location: manage_student.php');
     exit;
 }
 
@@ -63,10 +76,13 @@ if(isset($_GET['edit'])){
     $stmt->close();
 }
 
-// Fetch all students
-$result = $conn->query("SELECT * FROM students ORDER BY id DESC");
-?>
+// Fetch Students with error handling
+$approvedStudents = $conn->query("SELECT * FROM students WHERE status='approved' OR approved=1 ORDER BY id DESC");
+if(!$approvedStudents) $approvedStudents = []; // prevent fatal error
 
+$pendingStudents = $conn->query("SELECT * FROM students WHERE status='pending' OR approved=0 ORDER BY id DESC");
+if(!$pendingStudents) $pendingStudents = [];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,17 +119,15 @@ $result = $conn->query("SELECT * FROM students ORDER BY id DESC");
             <option value="Other" <?php echo ($editingStudent && $editingStudent['gender']=='Other') ? 'selected' : ''; ?>>Other</option>
         </select>
         <div class="form-submit-wrap">
-    <button type="submit" name="save_student">
-        <?php echo $editingStudent ? 'Update Student' : 'Add Student'; ?>
-    </button>
-    <?php if($editingStudent): ?>
-        <a href="./manage_student.php" class="cancel-btn">Cancel</a>
-    <?php endif; ?>
-</div>
+            <button type="submit" name="save_student"><?php echo $editingStudent ? 'Update Student' : 'Add Student'; ?></button>
+            <?php if($editingStudent): ?>
+                <a href="manage_student.php" class="cancel-btn">Cancel</a>
+            <?php endif; ?>
+        </div>
     </form>
 
-    <!-- STUDENT TABLE -->
-    <h2>All Students</h2>
+    <!-- APPROVED STUDENTS TABLE -->
+    <h2>Approved Students</h2>
     <table>
         <tr>
             <th>S.No</th>
@@ -124,8 +138,9 @@ $result = $conn->query("SELECT * FROM students ORDER BY id DESC");
             <th>Action</th>
         </tr>
         <?php 
-        $counter = 1;
-        while($row = $result->fetch_assoc()): ?>
+        $counter = 1; 
+        if($approvedStudents && $approvedStudents->num_rows > 0):
+            while($row = $approvedStudents->fetch_assoc()): ?>
         <tr>
             <td><?php echo $counter++; ?></td>
             <td><?php echo htmlspecialchars($row['full_name']); ?></td>
@@ -137,7 +152,36 @@ $result = $conn->query("SELECT * FROM students ORDER BY id DESC");
                 <a class="delete-btn" href="?delete=<?php echo $row['id']; ?>" onclick="return confirm('Delete this student?')">Delete</a>
             </td>
         </tr>
-        <?php endwhile; ?>
+        <?php endwhile; endif; ?>
+    </table>
+
+    <!-- PENDING STUDENTS TABLE -->
+    <h2>Pending Students</h2>
+    <table>
+        <tr>
+            <th>S.No</th>
+            <th>Name</th>
+            <th>Semester</th>
+            <th>Contact No</th>
+            <th>Gender</th>
+            <th>Action</th>
+        </tr>
+        <?php 
+        $counter = 1; 
+        if($pendingStudents && $pendingStudents->num_rows > 0):
+            while($row = $pendingStudents->fetch_assoc()): ?>
+        <tr>
+            <td><?php echo $counter++; ?></td>
+            <td><?php echo htmlspecialchars($row['full_name']); ?></td>
+            <td><?php echo htmlspecialchars($row['semester']); ?></td>
+            <td><?php echo htmlspecialchars($row['contact_no']); ?></td>
+            <td><?php echo htmlspecialchars($row['gender']); ?></td>
+            <td>
+                <a class="approve-btn" href="?approve=<?php echo $row['id']; ?>">Approve</a>
+                <a class="reject-btn" href="?disapprove=<?php echo $row['id']; ?>">Disapprove</a>
+            </td>
+        </tr>
+        <?php endwhile; endif; ?>
     </table>
 
 </div>

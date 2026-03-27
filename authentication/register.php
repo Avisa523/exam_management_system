@@ -95,7 +95,7 @@ a{
 <input type="password" name="password" id="password" required>
 <!-- Eye Icon -->
     <span onclick="togglePassword()" 
-          style="position:absolute; right:10px; top:50%; transform:translateY(-90%); cursor:pointer;">
+          style="position:absolute; right:10px; top:50%; transform:translateY(-10%); cursor:pointer;">
         👁️
     </span>
 </div>

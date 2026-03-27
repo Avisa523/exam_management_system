@@ -57,6 +57,8 @@ echo "<h1>Welcome, ".$_SESSION['username']."</h1>";
                 <li><a href="notices.php">📢 Notices</a></li>
                 <li><a href="result.php">📊 Result</a></li>
                 <li><a href="profile.php">👤 Profile</a></li>
+                                <li><a href="../authentication/change_password.php">🔒Change Password</a></li>
+
                 <li><a href="../authentication/logout.php">
                     <i class="fas fa-sign-out-alt"></i> 🔒 Logout</a></li>
             </ul>

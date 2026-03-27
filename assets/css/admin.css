@@ -175,7 +175,38 @@ tr:hover {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
 }
+/* Approve Button */
+.approve-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    margin-right: 5px;
+    display: inline-block;
+    transition: 0.3s;
+}
 
+.approve-btn:hover {
+    background-color: #218838;
+}
+
+/* Disapprove Button */
+.reject-btn {
+    background-color: #dc3545;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-block;
+    transition: 0.3s;
+}
+
+.reject-btn:hover {
+    background-color: #c82333;
+}
 /* ===== MESSAGING ===== */
 .success-message,
 .success-msg {
@@ -841,7 +872,7 @@ tr:hover {
 }
 
 .marksheet th {
-    background-color: brown; /* change to any color you like */
+    background-color: #262f37; /* change to any color you like */
     color: white;              /* text color */
     font-weight: bold;
     border: 1px solid #000;

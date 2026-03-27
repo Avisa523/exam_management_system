@@ -45,7 +45,10 @@ $notices = $conn->query("SELECT * FROM noticeboard ");
                 <li><a href="question_papers.php">📝 Question Papers</a></li>
                 <li><a href="exam_schedule.php">📅 Exam Schedule</a></li>
                 <li><a href="notice.php">📢 Notice</a></li>
+                                <li><a href=../a"change_password.php">🔒Change Password</a></li>
+
                 <li><a href="../authentication/logout.php">
+                    
                     <i class="fas fa-sign-out-alt"></i> 🔒 Logout</a></li>
                     
             </ul>
